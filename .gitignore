@@ -38,3 +38,10 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# rust / sculk 原生库构建产物
+sculk/sculk-main/target/
+sculk/sculk-main/*.log
+gradle-build.log
+smoke/classes/
+smoke/sources.txt

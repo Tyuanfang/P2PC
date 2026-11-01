@@ -1,0 +1,28 @@
+package a90pn.pepc.ffi;
+
+
+/**
+ * 隧道运行时事件种类。
+ */
+
+public enum EventKind {
+  PLAYER_JOINED,
+  PLAYER_LEFT,
+  CONNECTED,
+  DISCONNECTED,
+  PATH_CHANGED,
+  RECONNECTING,
+  RECONNECTED,
+  TOKEN_ROTATED,
+  TOKEN_ROTATION_FAILED,
+  AUTH_FAILED,
+  PLAYER_REJECTED,
+  ERROR;
+
+  
+  
+  
+
+}
+
+
