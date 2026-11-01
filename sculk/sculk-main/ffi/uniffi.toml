@@ -1,0 +1,3 @@
+[bindings.java]
+package_name = "a90pn.pepc.ffi"
+cdylib_name = "sculk_ffi"

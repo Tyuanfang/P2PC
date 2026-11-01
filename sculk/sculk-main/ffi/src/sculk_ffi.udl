@@ -1,0 +1,223 @@
+//! sculk 联机内核的 UniFFI 接口定义（UDL）。
+//!
+//! Java 侧由 uniffi-bindgen-java 0.5.2 生成绑定（Panama FFM，需要 Java 22+）。
+//! 所有时长字段统一用毫秒 u64；所有字节数组用 sequence<u8>（Java 侧为 byte[]）。
+
+namespace sculk_ffi {
+    /// Minecraft 服务端标准端口。
+    u16 default_mc_port();
+
+    /// join 端本地入站监听端口默认值。
+    u16 default_inlet_port();
+
+    /// 用旧版服务器列表探测（0xFE/0xFF）确认目标端口是 Minecraft Java 版服务。
+    [Throws=ScuLkError]
+    void probe_server(string addr, u64 timeout_ms);
+
+    /// 开始监听 Minecraft LAN 公告（224.0.2.60:4445），发现可连接的本机服务后结束。
+    [Throws=ScuLkError]
+    LanScanner lan_scanner_start();
+
+    /// 向本机 Minecraft 客户端周期性发布 LAN 公告。
+    [Throws=ScuLkError]
+    LanBroadcaster lan_broadcaster_start(string name, u16 port);
+};
+
+/// Host 端行为配置。
+dictionary HostConfig {
+    /// PathChanged 事件节流（毫秒）；0 = 仅变化时发送。
+    u64 event_delay_ms;
+    /// 最大玩家数；null = 不限制。
+    u32? max_players;
+};
+
+/// Join 端行为配置。
+dictionary JoinConfig {
+    /// PathChanged 事件节流（毫秒）；0 = 仅变化时发送。
+    u64 event_delay_ms;
+    /// 断线重连最长等待（毫秒）；null = 无限等待，0 = 关闭重连。
+    u64? reconnect_timeout_ms;
+    /// 本地 TCP 转发会话上限；0 = 使用默认值 64。
+    u64 local_sessions_max;
+};
+
+/// Host 启动参数。
+dictionary HostOptions {
+    /// 本地 Minecraft 服务端端口。
+    u16 mc_port;
+    /// 稳定节点密钥（32 字节）；null = 生成临时密钥。
+    sequence<u8>? secret_key;
+    /// 自定义中继 URL；null = 使用 iroh 默认中继。
+    string? relay_url;
+    /// 服务标识（16 字节）；null = 自动生成。
+    sequence<u8>? service_id;
+    /// 会话访问令牌（32 字节）；null = 自动生成。
+    sequence<u8>? token;
+    /// Host 行为配置。
+    HostConfig config;
+};
+
+/// Join 启动参数。
+dictionary JoinOptions {
+    /// sculk://join/v1/ 分享 URI。
+    string join_uri;
+    /// 本地 Minecraft 客户端连接端口；0 = 自动分配。
+    u16 local_port;
+    /// Join 行为配置。
+    JoinConfig config;
+};
+
+/// 隧道生命周期阶段。
+enum TunnelPhase {
+    "Idle",
+    "Starting",
+    "Active",
+    "Stopping",
+};
+
+/// 隧道运行角色。
+enum TunnelMode {
+    "Host",
+    "Join",
+};
+
+/// 隧道运行时事件种类。
+enum EventKind {
+    "PlayerJoined",
+    "PlayerLeft",
+    "Connected",
+    "Disconnected",
+    "PathChanged",
+    "Reconnecting",
+    "Reconnected",
+    "TokenRotated",
+    "TokenRotationFailed",
+    "AuthFailed",
+    "PlayerRejected",
+    "Error",
+};
+
+/// 稳定错误分类。
+enum ErrorCategory {
+    "InvalidJoinUri",
+    "InvalidEndpoint",
+    "AuthorizationDenied",
+    "HostUnreachable",
+    "TargetUnavailable",
+    "LocalPortUnavailable",
+    "IdentityUnavailable",
+    "OperationConflict",
+    "ResourceLimit",
+    "InvalidConfiguration",
+    "Internal",
+};
+
+/// 轻量生命周期快照。
+dictionary TunnelState {
+    TunnelPhase phase;
+    TunnelMode? mode;
+    string? join_uri;
+    string? local_addr;
+};
+
+/// 单条连接瞬时快照。
+dictionary ConnectionSnapshot {
+    string remote_id;
+    boolean is_relay;
+    u64 rtt_ms;
+    u64 tx_bytes;
+    u64 rx_bytes;
+    boolean alive;
+    u64 elapsed_ms;
+};
+
+/// 完整隧道快照。
+dictionary TunnelStatus {
+    TunnelState state;
+    sequence<ConnectionSnapshot> connections;
+    ErrorCategory? last_error;
+};
+
+/// 拍平的隧道事件记录：`kind` 决定哪些字段有效。
+dictionary TunnelEvent {
+    EventKind kind;
+    string? player_id;
+    string? reason;
+    string? remote_id;
+    boolean is_relay;
+    u64 rtt_ms;
+    u32 attempt;
+    u64? retry_in_ms;
+    ErrorCategory? category;
+    string? message;
+};
+
+/// 统一更新：状态快照或过程事件。
+dictionary TunnelUpdate {
+    boolean is_event;
+    TunnelStatus? status;
+    TunnelEvent? event;
+};
+
+/// 单实例托管隧道服务（Clone 语义由 Rust 侧对象共享）。
+interface TunnelService {
+    constructor();
+
+    [Throws=ScuLkError, Async]
+    void start_host(HostOptions options);
+
+    [Throws=ScuLkError, Async]
+    void start_join(JoinOptions options);
+
+    [Throws=ScuLkError, Async]
+    TunnelStatus stop();
+
+    [Throws=ScuLkError, Async]
+    void shutdown();
+
+    TunnelStatus status();
+
+    Subscription subscribe();
+};
+
+/// 统一订阅端：首次 recv 返回当前状态，之后状态/事件交错。
+interface Subscription {
+    [Throws=ScuLkError, Async]
+    TunnelUpdate? recv();
+};
+
+/// LAN 公告扫描器。
+interface LanScanner {
+    u16? try_recv();
+    boolean is_finished();
+    [Throws=ScuLkError]
+    void stop();
+};
+
+/// LAN 公告广播器。
+interface LanBroadcaster {
+    boolean is_finished();
+    [Throws=ScuLkError]
+    void stop();
+};
+
+/// 胶水层统一错误。
+[Error]
+enum ScuLkError {
+    "Busy",
+    "NotRunning",
+    "InvalidPort",
+    "InvalidMaxPlayers",
+    "Io",
+    "InvalidJoinUri",
+    "InvalidEndpoint",
+    "AuthorizationDenied",
+    "HostUnreachable",
+    "TargetUnavailable",
+    "LocalPortUnavailable",
+    "IdentityUnavailable",
+    "OperationConflict",
+    "ResourceLimit",
+    "InvalidConfiguration",
+    "Internal",
+};

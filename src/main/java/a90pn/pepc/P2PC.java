@@ -21,7 +21,13 @@ public class P2PC implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		LOGGER.info("Hello Fabric world!");
+		try {
+			SculkClient.ensureLoaded();
+			LOGGER.info("[p2pc] sculk FFI 原生库已加载（MC 端口 {}，入站端口 {}）",
+					SculkClient.defaultMcPort(), SculkClient.defaultInletPort());
+		} catch (Throwable error) {
+			LOGGER.error("[p2pc] sculk FFI 原生库加载失败", error);
+		}
 	}
 
 	public static ResourceLocation id(String path) {

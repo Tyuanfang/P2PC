@@ -42,7 +42,7 @@ tasks.processResources {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-	options.release = 21
+	options.release = 22
 }
 
 java {
@@ -51,8 +51,22 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_22
+	targetCompatibility = JavaVersion.VERSION_22
+}
+
+// 生成的 UniFFI Java 绑定（Panama FFM，需 Java 22+）。
+sourceSets {
+	main {
+		java {
+			srcDir("src/generated/java")
+		}
+	}
+}
+
+// Java 22/23 上 FFM 受限方法需要显式放开；24+ 只是警告，带上无害。
+tasks.withType<JavaExec>().configureEach {
+	jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
 tasks.jar {
@@ -61,6 +75,16 @@ tasks.jar {
 
 	from("LICENSE") {
 		rename { "${it}_$projectName" }
+	}
+
+	// 把 Rust 侧构建出的 sculk_ffi.dll 打包进模组
+	val dll = file("sculk/sculk-main/target/release/sculk_ffi.dll")
+	if (dll.exists()) {
+		from(dll) {
+			into("natives/windows-x86_64")
+		}
+	} else {
+		println("[p2pc] 未找到 sculk_ffi.dll（${dll.path}），跳过原生库打包。先构建 Rust 侧：cargo build -p sculk-ffi --release")
 	}
 }
 
