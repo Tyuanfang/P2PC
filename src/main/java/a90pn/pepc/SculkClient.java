@@ -7,45 +7,58 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 
 import a90pn.pepc.ffi.HostConfig;
 import a90pn.pepc.ffi.HostOptions;
+import a90pn.pepc.ffi.HostProfile;
+import a90pn.pepc.ffi.HostState;
+import a90pn.pepc.ffi.HostedServiceHandle;
+import a90pn.pepc.ffi.HostedServiceOptions;
+import a90pn.pepc.ffi.HostedServiceStatus;
 import a90pn.pepc.ffi.JoinConfig;
 import a90pn.pepc.ffi.JoinOptions;
+import a90pn.pepc.ffi.JoinProfile;
+import a90pn.pepc.ffi.JoinUri;
 import a90pn.pepc.ffi.LanBroadcaster;
 import a90pn.pepc.ffi.LanScanner;
+import a90pn.pepc.ffi.NodeOptions;
+import a90pn.pepc.ffi.Profile;
+import a90pn.pepc.ffi.RelayProfile;
 import a90pn.pepc.ffi.ScuLkException;
 import a90pn.pepc.ffi.SculkFfi;
+import a90pn.pepc.ffi.SculkNode;
+import a90pn.pepc.ffi.SculkNodeStatus;
 import a90pn.pepc.ffi.Subscription;
+import a90pn.pepc.ffi.TokenRefreshKind;
+import a90pn.pepc.ffi.TokenRefreshPolicy;
+import a90pn.pepc.ffi.TokenRefreshSetting;
+import a90pn.pepc.ffi.TokenState;
 import a90pn.pepc.ffi.TunnelService;
 import a90pn.pepc.ffi.TunnelStatus;
 import a90pn.pepc.ffi.TunnelUpdate;
 import a90pn.pepc.ffi.UniffiInitializer;
 
 /**
- * sculk 联机内核的 Java 入口（模组里只需要碰这一个类）。
+ * sculk 联机内核的 Java 入口
  *
- * <p>底层由 uniffi-bindgen-java 从 {@code sculk_ffi.dll} 生成的 Panama FFM 绑定
- * （包 {@code a90pn.pepc.ffi}）组成；这里做三件事：
- * <ul>
- *   <li>把模组 jar 里的原生库解包到临时目录，并设置
- *       {@code uniffi.component.sculk_ffi.libraryOverride} 让生成代码用绝对路径加载；</li>
- *   <li>把生成绑定里对 Java 不友好的类型（{@code List<Byte>} 密钥、{@code short} 端口）
- *       收成普通 {@code byte[]}/{@code int}；</li>
- *   <li>把 12 种隧道事件 + 状态快照转成一个可直接消费的事件流。</li>
- * </ul>
+ * <p>底层是 uniffi-bindgen-java 从 {@code ffi/src/sculk_ffi.udl} 生成的 Panama FFM 绑定
+ * （包 {@code a90pn.pepc.ffi}）；本类把常用入口、参数构造、事件泵和多平台原生库加载
+ * 收拢在一个门面里。
  *
- * <p>要求 Java 22+（Panama FFM 定稿 API），运行时建议加
- * {@code --enable-native-access=ALL-UNNAMED}（22/23 必需，24+ 只是消警告）。
+ * <p>原生库：jar 内按平台放在 {@code /natives/<平台标识>/}（windows-x86_64、
+ * linux-x86_64、linux-aarch64、macos-x86_64、macos-aarch64）；首次调用时解包到临时
+ * 目录并通过 {@code uniffi.component.sculk_ffi.libraryOverride} 交给生成代码加载。
+ *
+ * <p>要求 Java 22+，运行时加 {@code --enable-native-access=ALL-UNNAMED}
+ * （22/23 必需，24+ 只是消警告）。
  */
 public final class SculkClient {
     /** 生成代码读取的库路径覆盖属性（namespace = sculk_ffi）。 */
     public static final String LIBRARY_PROPERTY = "uniffi.component.sculk_ffi.libraryOverride";
-
-    /** 模组内 DLL 资源路径（见 build.gradle.kts 的 jar 打包配置）。 */
-    private static final String BUNDLED_DLL = "/natives/windows-x86_64/sculk_ffi.dll";
 
     private static volatile boolean loaded = false;
 
@@ -56,6 +69,9 @@ public final class SculkClient {
 
     /**
      * 加载原生库（幂等）。必须在首次触碰任何生成绑定之前调用；模组初始化时调一次即可。
+     *
+     * <p>也可以事先设置 {@code -Duniffi.component.sculk_ffi.libraryOverride=<绝对路径>}
+     * 让它直接加载指定文件（调试用）。
      */
     public static synchronized void ensureLoaded() {
         if (loaded) {
@@ -64,7 +80,7 @@ public final class SculkClient {
 
         String override = System.getProperty(LIBRARY_PROPERTY);
         if (override == null || override.isBlank()) {
-            override = extractBundledDll().toString();
+            override = extractBundledLibrary().toString();
             System.setProperty(LIBRARY_PROPERTY, override);
         }
 
@@ -73,21 +89,59 @@ public final class SculkClient {
         loaded = true;
     }
 
-    private static Path extractBundledDll() {
-        try (InputStream in = SculkClient.class.getResourceAsStream(BUNDLED_DLL)) {
+    /** 当前系统对应的平台标识；不支持时返回 null。 */
+    public static String platformToken() {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
+        boolean arm64 = arch.contains("aarch64") || arch.contains("arm64");
+        boolean x64 = arch.contains("amd64") || arch.contains("x86_64") || arch.equals("x64");
+
+        if (os.contains("win")) {
+            return x64 ? "windows-x86_64" : null;
+        }
+        if (os.contains("mac") || os.contains("darwin")) {
+            return arm64 ? "macos-aarch64" : (x64 ? "macos-x86_64" : null);
+        }
+        if (os.contains("linux")) {
+            return arm64 ? "linux-aarch64" : (x64 ? "linux-x86_64" : null);
+        }
+        return null;
+    }
+
+    /** 平台上动态库的文件名。 */
+    public static String libraryFileName(String platformToken) {
+        if (platformToken.startsWith("windows")) {
+            return "sculk_ffi.dll";
+        }
+        if (platformToken.startsWith("macos")) {
+            return "libsculk_ffi.dylib";
+        }
+        return "libsculk_ffi.so";
+    }
+
+    private static Path extractBundledLibrary() {
+        String platform = platformToken();
+        if (platform == null) {
+            throw new IllegalStateException("p2pc 的 sculk 原生库不支持当前系统: "
+                    + System.getProperty("os.name") + " / " + System.getProperty("os.arch"));
+        }
+
+        String fileName = libraryFileName(platform);
+        String resource = "/natives/" + platform + "/" + fileName;
+        try (InputStream in = SculkClient.class.getResourceAsStream(resource)) {
             if (in == null) {
-                throw new IllegalStateException(
-                        "sculk_ffi.dll 不在模组内（" + BUNDLED_DLL
-                                + "），先构建 Rust 侧（cargo build -p sculk-ffi --release）再重新打包");
+                throw new IllegalStateException("模组里没有 " + resource
+                        + "：这个平台的 sculk 原生库还没被打包（需要为 " + platform
+                        + " 构建 sculk-ffi 后重新打包）");
             }
-            Path dir = Files.createTempDirectory("p2pc-natives");
-            Path dll = dir.resolve("sculk_ffi.dll");
-            Files.copy(in, dll, StandardCopyOption.REPLACE_EXISTING);
-            dll.toFile().deleteOnExit();
+            Path dir = Files.createTempDirectory("p2pc-natives-");
+            Path library = dir.resolve(fileName);
+            Files.copy(in, library, StandardCopyOption.REPLACE_EXISTING);
+            library.toFile().deleteOnExit();
             dir.toFile().deleteOnExit();
-            return dll;
+            return library;
         } catch (IOException error) {
-            throw new IllegalStateException("解包 sculk_ffi.dll 失败", error);
+            throw new IllegalStateException("解包 sculk 原生库失败（" + resource + "）", error);
         }
     }
 
@@ -116,7 +170,62 @@ public final class SculkClient {
         SculkFfi.probeServer(addr, timeoutMs);
     }
 
-    // ------------------------------------------------------------------ 参数构造
+    // ------------------------------------------------------------------ 密钥 / 标识 / 令牌
+
+    /** 生成新的 32 字节节点密钥。 */
+    public static byte[] generateSecretKey() {
+        ensureLoaded();
+        return toByteArray(SculkFfi.secretKeyGenerate().toBytes());
+    }
+
+    /** 由 32 字节节点密钥导出 EndpointId 字符串。 */
+    public static String secretKeyPublicKey(byte[] secretKey) throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.secretKeyFromBytes(toByteList(secretKey)).publicKey();
+    }
+
+    /** 生成新的 16 字节服务标识。 */
+    public static byte[] generateServiceId() {
+        ensureLoaded();
+        return toByteArray(SculkFfi.serviceIdGenerate().toBytes());
+    }
+
+    /** 生成新的 32 字节访问令牌。 */
+    public static byte[] generateAccessToken() {
+        ensureLoaded();
+        return toByteArray(SculkFfi.accessTokenGenerate().toBytes());
+    }
+
+    /** 以常量时间比较两个 32 字节访问令牌。 */
+    public static boolean accessTokenMatches(byte[] token, byte[] other) throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.accessTokenFromBytes(toByteList(token)).matches(toByteList(other));
+    }
+
+    // ------------------------------------------------------------------ 分享 URI
+
+    /** 解析 {@code sculk://join/v1/...} 分享串。 */
+    public static JoinUri parseJoinUri(String uri) throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.joinUriParse(uri);
+    }
+
+    /** 从分享 URI 取回可分享的完整串（含访问令牌）。 */
+    public static String joinUriSecret(JoinUri uri) throws ScuLkException {
+        return uri.exposeSecretUri();
+    }
+
+    /** 脱敏展示形式（不含访问令牌，可安全写日志）。 */
+    public static String joinUriRedacted(JoinUri uri) {
+        return uri.redacted();
+    }
+
+    /** URI 里携带的自定义中继（null = iroh 默认）。 */
+    public static String joinUriRelayUrl(JoinUri uri) {
+        return uri.relayUrl();
+    }
+
+    // ------------------------------------------------------------------ 单隧道（TunnelService）
 
     /** Host 端行为配置。 */
     public static HostConfig hostConfig(long eventDelayMs, Integer maxPlayers) {
@@ -152,22 +261,6 @@ public final class SculkClient {
     public static JoinOptions joinOptions(String joinUri, int localPort, JoinConfig config) {
         return new JoinOptions(joinUri, (short) localPort, config);
     }
-
-    private static List<Byte> toByteList(byte[] raw) {
-        if (raw == null) {
-            return null;
-        }
-        if (raw.length != 0 && raw.length != 16 && raw.length != 32) {
-            throw new IllegalArgumentException("长度必须是 16 或 32 字节，实际 " + raw.length);
-        }
-        List<Byte> out = new ArrayList<>(raw.length);
-        for (byte b : raw) {
-            out.add(b);
-        }
-        return out;
-    }
-
-    // ------------------------------------------------------------------ 隧道
 
     /** 新建一个隧道服务实例（进程内一个就够）。 */
     public static TunnelService newService() {
@@ -279,6 +372,208 @@ public final class SculkClient {
         }
     }
 
+    // ------------------------------------------------------------------ 多服务 Host 节点
+
+    /** 多服务节点的创建参数。 */
+    public static NodeOptions nodeOptions(byte[] secretKey, String relayUrl, long unauthenticatedConnectionsMax) {
+        return new NodeOptions(toByteList(secretKey), relayUrl, unauthenticatedConnectionsMax);
+    }
+
+    /** 令牌状态（token 32 字节 + 创建时刻 Unix 毫秒）。 */
+    public static TokenState tokenState(byte[] token, long createdAtMs) {
+        return new TokenState(toByteList(token), createdAtMs);
+    }
+
+    /** 令牌刷新策略。 */
+    public static TokenRefreshPolicy tokenRefresh(TokenRefreshPolicyKind kind, long periodMs) {
+        return new TokenRefreshPolicy(kind.value(), periodMs);
+    }
+
+    /** 便捷的令牌刷新策略枚举（与生成代码的 TokenRefreshKind 一一对应）。 */
+    public enum TokenRefreshPolicyKind {
+        ALWAYS(TokenRefreshKind.ALWAYS),
+        NEVER(TokenRefreshKind.NEVER),
+        AFTER(TokenRefreshKind.AFTER);
+
+        private final TokenRefreshKind value;
+
+        TokenRefreshPolicyKind(TokenRefreshKind value) {
+            this.value = value;
+        }
+
+        TokenRefreshKind value() {
+            return value;
+        }
+    }
+
+    /** 发布单个 Host 服务的参数。 */
+    public static HostedServiceOptions hostedServiceOptions(byte[] serviceId, String targetAddr,
+                                                           TokenState tokenState,
+                                                           TokenRefreshPolicy tokenRefresh,
+                                                           HostConfig config) {
+        return new HostedServiceOptions(toByteList(serviceId), targetAddr, tokenState, tokenRefresh, config);
+    }
+
+    /** 创建多服务 Host 节点（单个 iroh Endpoint 上发布多个隔离服务）。 */
+    public static CompletableFuture<SculkNode> bindNode(NodeOptions options) {
+        ensureLoaded();
+        return SculkFfi.sculptNodeBind(options);
+    }
+
+    /** 发布服务并返回其操作句柄。 */
+    public static CompletableFuture<HostedServiceHandle> startService(SculkNode node, HostedServiceOptions options) {
+        ensureLoaded();
+        return node.startService(options);
+    }
+
+    /** 停止服务（不关闭 Node）。 */
+    public static CompletableFuture<Void> stopService(SculkNode node, byte[] serviceId) {
+        ensureLoaded();
+        return node.stopService(toByteList(serviceId));
+    }
+
+    /** 节点稳定状态快照。 */
+    public static CompletableFuture<SculkNodeStatus> nodeStatus(SculkNode node) {
+        ensureLoaded();
+        return node.status();
+    }
+
+    /** 节点稳定 EndpointId。 */
+    public static String nodeEndpointId(SculkNode node) {
+        ensureLoaded();
+        return node.endpointId();
+    }
+
+    /** 为指定服务轮换令牌并返回新的分享 URI。 */
+    public static CompletableFuture<JoinUri> rotateServiceToken(SculkNode node, byte[] serviceId) {
+        ensureLoaded();
+        return node.rotateToken(toByteList(serviceId));
+    }
+
+    /** 停止所有服务并关闭 Node。 */
+    public static CompletableFuture<Void> closeNode(SculkNode node) {
+        ensureLoaded();
+        return node.shutdown();
+    }
+
+    /** 服务句柄：当前分享 URI（含令牌）。 */
+    public static String handleSecretUri(HostedServiceHandle handle) throws ScuLkException {
+        return await(handle.joinUri()).exposeSecretUri();
+    }
+
+    /** 服务句柄：当前令牌状态。 */
+    public static TokenState handleTokenState(HostedServiceHandle handle) throws ScuLkException {
+        return await(handle.tokenState());
+    }
+
+    /** 服务句柄：稳定状态快照。 */
+    public static HostedServiceStatus handleStatus(HostedServiceHandle handle) throws ScuLkException {
+        return await(handle.status());
+    }
+
+    /** 服务句柄：立即轮换令牌并返回新的分享 URI。 */
+    public static JoinUri handleRotateToken(HostedServiceHandle handle) throws ScuLkException {
+        return await(handle.rotateToken());
+    }
+
+    /** 服务句柄：独立停止此服务。 */
+    public static void handleStop(HostedServiceHandle handle) throws ScuLkException {
+        await(handle.stop());
+    }
+
+    /** 服务句柄：服务标识（16 字节）。 */
+    public static byte[] handleServiceId(HostedServiceHandle handle) {
+        return toByteArray(handle.serviceId());
+    }
+
+    // ------------------------------------------------------------------ 持久化
+
+    /** 应用数据目录（{@code {data_dir}/sculk/}）。 */
+    public static String dataDir() throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistDataDir();
+    }
+
+    /** 默认节点密钥文件路径。 */
+    public static String defaultKeyPath() throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistDefaultKeyPath();
+    }
+
+    /** 默认 host 状态文件路径。 */
+    public static String defaultHostStatePath() throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistDefaultHostStatePath();
+    }
+
+    /** 加载稳定节点密钥；不存在时生成并写入。 */
+    public static byte[] loadOrGenerateKey(String path) throws ScuLkException {
+        ensureLoaded();
+        return toByteArray(SculkFfi.persistLoadOrGenerateKey(path).toBytes());
+    }
+
+    /** 生成并写入新的节点密钥（覆盖已有文件）。 */
+    public static byte[] generateNewKey(String path) throws ScuLkException {
+        ensureLoaded();
+        return toByteArray(SculkFfi.persistGenerateNewKey(path).toBytes());
+    }
+
+    /** 加载 host 状态；文件不存在时返回 null。 */
+    public static HostState loadHostState(String path) throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistLoadHostState(path);
+    }
+
+    /** 原子保存 host 状态。 */
+    public static void saveHostState(String path, HostState state) throws ScuLkException {
+        ensureLoaded();
+        SculkFfi.persistSaveHostState(path, state);
+    }
+
+    /** 加载默认位置的用户偏好 profile（不存在时返回默认值）。 */
+    public static Profile loadProfile() throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistLoadProfile();
+    }
+
+    /** 保存用户偏好 profile 到默认位置。 */
+    public static void saveProfile(Profile profile) throws ScuLkException {
+        ensureLoaded();
+        SculkFfi.persistSaveProfile(profile);
+    }
+
+    /** 从指定路径加载 profile。 */
+    public static Profile loadProfileFrom(String path) throws ScuLkException {
+        ensureLoaded();
+        return SculkFfi.persistLoadProfileFrom(path);
+    }
+
+    /** 保存 profile 到指定路径。 */
+    public static void saveProfileTo(String path, Profile profile) throws ScuLkException {
+        ensureLoaded();
+        SculkFfi.persistSaveProfileTo(path, profile);
+    }
+
+    /** host 端偏好配置。 */
+    public static HostProfile hostProfile(int port, TokenRefreshSetting tokenRefresh) {
+        return new HostProfile((short) port, tokenRefresh);
+    }
+
+    /** join 端偏好配置。 */
+    public static JoinProfile joinProfile(int port) {
+        return new JoinProfile((short) port);
+    }
+
+    /** relay 偏好配置。 */
+    public static RelayProfile relayProfile(boolean custom, String url) {
+        return new RelayProfile(custom, url);
+    }
+
+    /** 用户偏好配置根结构。 */
+    public static Profile profile(HostProfile host, JoinProfile join, RelayProfile relay) {
+        return new Profile(host, join, relay);
+    }
+
     // ------------------------------------------------------------------ LAN
 
     /** 开始监听 Minecraft LAN 公告（224.0.2.60:4445），发现可连接的本机服务后结束。 */
@@ -291,5 +586,48 @@ public final class SculkClient {
     public static LanBroadcaster lanBroadcasterStart(String name, int port) throws ScuLkException {
         ensureLoaded();
         return SculkFfi.lanBroadcasterStart(name, (short) port);
+    }
+
+    // ------------------------------------------------------------------ 小工具
+
+    private static byte[] toByteArray(List<Byte> raw) {
+        if (raw == null) {
+            return null;
+        }
+        byte[] out = new byte[raw.size()];
+        for (int i = 0; i < out.length; i++) {
+            Byte value = raw.get(i);
+            out[i] = value == null ? 0 : value;
+        }
+        return out;
+    }
+
+    private static List<Byte> toByteList(byte[] raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw.length != 0 && raw.length != 16 && raw.length != 32) {
+            throw new IllegalArgumentException("长度必须是 16 或 32 字节，实际 " + raw.length);
+        }
+        List<Byte> out = new ArrayList<>(raw.length);
+        for (byte b : raw) {
+            out.add(b);
+        }
+        return out;
+    }
+
+    private static <T> T await(CompletableFuture<T> future) throws ScuLkException {
+        try {
+            return future.join();
+        } catch (CompletionException error) {
+            Throwable cause = error.getCause();
+            if (cause instanceof ScuLkException sculk) {
+                throw sculk;
+            }
+            if (cause instanceof RuntimeException runtime) {
+                throw runtime;
+            }
+            throw new IllegalStateException(cause);
+        }
     }
 }

@@ -28,6 +28,7 @@ public class P2PC implements ModInitializer {
 		} catch (Throwable error) {
 			LOGGER.error("[p2pc] sculk FFI 原生库加载失败", error);
 		}
+
 	}
 
 	public static ResourceLocation id(String path) {

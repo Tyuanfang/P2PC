@@ -1,14 +1,52 @@
-# Automatically build the project and run any configured tests for every push
-# and submitted pull request. This can help catch issues that only occur on
-# certain platforms or Java versions, and provides a first line of defence
-# against bad commits.
+# 自动构建：先为各平台编译 Rust 原生库（sculk-ffi），
+# 再把多平台原生库合并进同一个模组 jar，最后跑 Gradle 构建。
 
 name: build
 on: [pull_request, push]
 
 jobs:
+  natives:
+    name: rust native (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x86_64
+            os: windows-latest
+            lib: sculk_ffi.dll
+          - platform: linux-x86_64
+            os: ubuntu-24.04
+            lib: libsculk_ffi.so
+          - platform: macos-x86_64
+            os: macos-13
+            lib: libsculk_ffi.dylib
+          - platform: macos-aarch64
+            os: macos-14
+            lib: libsculk_ffi.dylib
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: install rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: build sculk-ffi
+        run: cargo build -p sculk-ffi --release --manifest-path sculk/sculk-main/Cargo.toml
+      - name: stage native library
+        shell: bash
+        run: |
+          mkdir -p "natives/${{ matrix.platform }}"
+          cp "sculk/sculk-main/target/release/${{ matrix.lib }}" "natives/${{ matrix.platform }}/"
+      - name: upload native library
+        uses: actions/upload-artifact@v7
+        with:
+          name: natives-${{ matrix.platform }}
+          path: natives/${{ matrix.platform }}/${{ matrix.lib }}
+          if-no-files-found: error
+
   build:
+    name: mod jar
     runs-on: ubuntu-24.04
+    needs: natives
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
@@ -19,6 +57,21 @@ jobs:
         with:
           java-version: '25'
           distribution: 'microsoft'
+      - name: download native libraries
+        uses: actions/download-artifact@v7
+        with:
+          pattern: natives-*
+          path: natives-tmp
+      - name: merge native libraries
+        shell: bash
+        run: |
+          mkdir -p natives
+          for dir in natives-tmp/natives-*; do
+            platform="${dir#natives-tmp/natives-}"
+            mkdir -p "natives/$platform"
+            cp "$dir"/* "natives/$platform/"
+          done
+          find natives -type f | sort
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build

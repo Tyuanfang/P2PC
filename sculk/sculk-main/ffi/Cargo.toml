@@ -13,9 +13,12 @@ name = "sculk_ffi"
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-sculk = { workspace = true }
+sculk = { workspace = true, features = ["persist"] }
 tokio = { workspace = true }
 uniffi = { version = "0.32", features = ["tokio"] }
+rand = { workspace = true }
+# 让 tokio 的 future 能在非 tokio executor（uniffi 的 FFI 轮询线程）上运行
+async-compat = "0.2"
 
 [build-dependencies]
 uniffi = { version = "0.32", features = ["build"] }

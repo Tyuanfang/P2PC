@@ -2,6 +2,7 @@
 //!
 //! Java 侧由 uniffi-bindgen-java 0.5.2 生成绑定（Panama FFM，需要 Java 22+）。
 //! 所有时长字段统一用毫秒 u64；所有字节数组用 sequence<u8>（Java 侧为 byte[]）。
+//! 接口参数一律用字节数组（而不是对象），只有返回值才使用对象句柄。
 
 namespace sculk_ffi {
     /// Minecraft 服务端标准端口。
@@ -21,6 +22,87 @@ namespace sculk_ffi {
     /// 向本机 Minecraft 客户端周期性发布 LAN 公告。
     [Throws=ScuLkError]
     LanBroadcaster lan_broadcaster_start(string name, u16 port);
+
+    // ---- 密钥 / 服务标识 / 访问令牌 ----
+
+    /// 生成新的 32 字节节点密钥。
+    SecretKey secret_key_generate();
+
+    /// 从 32 字节数组创建节点密钥。
+    [Throws=ScuLkError]
+    SecretKey secret_key_from_bytes(sequence<u8> bytes);
+
+    /// 生成新的 16 字节服务标识。
+    ServiceId service_id_generate();
+
+    /// 从 16 字节数组创建服务标识。
+    [Throws=ScuLkError]
+    ServiceId service_id_from_bytes(sequence<u8> bytes);
+
+    /// 生成新的 32 字节访问令牌。
+    AccessToken access_token_generate();
+
+    /// 从 32 字节数组创建访问令牌。
+    [Throws=ScuLkError]
+    AccessToken access_token_from_bytes(sequence<u8> bytes);
+
+    // ---- 分享 URI ----
+
+    /// 解析 `sculk://join/v1/` 分享 URI。
+    [Throws=ScuLkError]
+    JoinUri join_uri_parse(string uri);
+
+    // ---- 多服务 Host 节点 ----
+
+    /// 创建多服务 Host 节点（单个 iroh Endpoint 上发布多个隔离服务）。
+    [Async, Throws=ScuLkError]
+    SculkNode sculpt_node_bind(NodeOptions options);
+
+    // ---- 应用数据持久化（profile / 密钥 / host 状态）----
+
+    /// 应用数据目录（`{data_dir}/sculk/`）。
+    [Throws=ScuLkError]
+    string persist_data_dir();
+
+    /// 默认节点密钥文件路径。
+    [Throws=ScuLkError]
+    string persist_default_key_path();
+
+    /// 默认 host 状态文件路径。
+    [Throws=ScuLkError]
+    string persist_default_host_state_path();
+
+    /// 加载稳定节点密钥；不存在时生成并写入。
+    [Throws=ScuLkError]
+    SecretKey persist_load_or_generate_key(string path);
+
+    /// 生成并写入新的节点密钥（覆盖已有文件）。
+    [Throws=ScuLkError]
+    SecretKey persist_generate_new_key(string path);
+
+    /// 加载 host 状态；文件不存在时返回 null。
+    [Throws=ScuLkError]
+    HostState? persist_load_host_state(string path);
+
+    /// 原子保存 host 状态。
+    [Throws=ScuLkError]
+    void persist_save_host_state(string path, HostState state);
+
+    /// 加载默认位置的用户偏好 profile（不存在时返回默认值）。
+    [Throws=ScuLkError]
+    Profile persist_load_profile();
+
+    /// 保存用户偏好 profile 到默认位置。
+    [Throws=ScuLkError]
+    void persist_save_profile(Profile profile);
+
+    /// 从指定路径加载 profile。
+    [Throws=ScuLkError]
+    Profile persist_load_profile_from(string path);
+
+    /// 保存 profile 到指定路径。
+    [Throws=ScuLkError]
+    void persist_save_profile_to(string path, Profile profile);
 };
 
 /// Host 端行为配置。
@@ -65,6 +147,144 @@ dictionary JoinOptions {
     u16 local_port;
     /// Join 行为配置。
     JoinConfig config;
+};
+
+/// 多服务节点的创建参数。
+dictionary NodeOptions {
+    /// 稳定节点密钥（32 字节）；null = 生成临时身份。
+    sequence<u8>? secret_key;
+    /// Node 级自定义中继 URL；null = 使用 iroh 默认中继。
+    string? relay_url;
+    /// 同时等待认证的连接上限；0 = 使用默认值 128。
+    u64 unauthenticated_connections_max;
+};
+
+/// 需要由实例管理层安全持久化的访问令牌状态。
+dictionary TokenState {
+    /// 访问令牌（32 字节）。
+    sequence<u8> token;
+    /// 令牌创建时刻（Unix 毫秒）。
+    u64 created_at_ms;
+};
+
+/// 令牌轮换策略种类。
+enum TokenRefreshKind {
+    "Always",
+    "Never",
+    "After",
+};
+
+/// 跨服务停止和重启生效的令牌刷新策略。
+dictionary TokenRefreshPolicy {
+    /// 策略种类。
+    TokenRefreshKind kind;
+    /// `After` 的轮换周期（毫秒）；其他种类忽略。
+    u64 period_ms;
+};
+
+/// 发布单个 Host 服务的参数。
+dictionary HostedServiceOptions {
+    /// 稳定的服务路由标识（16 字节）。
+    sequence<u8> service_id;
+    /// 仅允许本机 loopback 的目标 Minecraft 地址，如 `127.0.0.1:25565`。
+    string target_addr;
+    /// 上次发布保存的令牌状态；首次发布时为 null。
+    TokenState? token_state;
+    /// 令牌刷新策略。
+    TokenRefreshPolicy token_refresh;
+    /// 服务级连接策略。
+    HostConfig config;
+};
+
+/// Node 的稳定状态快照。
+dictionary SculkNodeStatus {
+    /// Node 的稳定 EndpointId。
+    string endpoint_id;
+    /// 底层 Endpoint 是否仍在运行。
+    boolean online;
+    /// Node 级自定义中继。
+    string? relay_url;
+    /// 当前已发布服务数。
+    u64 service_count;
+    /// 当前等待认证的连接数。
+    u64 unauthenticated_connection_count;
+    /// 认证并发上限。
+    u64 unauthenticated_connections_max;
+};
+
+/// 已发布服务的生命周期阶段。
+enum HostedServicePhase {
+    "Active",
+    "Stopping",
+    "Stopped",
+};
+
+/// 单个已发布服务的稳定状态快照。
+dictionary HostedServiceStatus {
+    /// 服务标识（16 字节）。
+    sequence<u8> service_id;
+    /// 当前生命周期阶段。
+    HostedServicePhase phase;
+    /// 当前分享 URI 的代数。
+    u64 uri_generation;
+    /// 当前令牌创建时刻（Unix 毫秒）。
+    u64 token_created_at_ms;
+    /// 下一次自动轮换时刻（Unix 毫秒）；null = 不自动轮换。
+    u64? next_rotation_at_ms;
+    /// 当前已认证且仍存活的连接数。
+    u64 connection_count;
+    /// 当前活跃的 TCP-to-QUIC 桥接数。
+    u64 bridge_count;
+    /// 最近一次影响此服务的结构化错误。
+    ErrorCategory? last_error;
+};
+
+/// 跨 Host 发布保存的稳定服务标识和令牌状态。
+dictionary HostState {
+    /// 服务标识（16 字节）。
+    sequence<u8> service_id;
+    /// 令牌状态。
+    TokenState token_state;
+};
+
+/// 可持久化的分享链接刷新策略。
+enum TokenRefreshSetting {
+    "Always",
+    "Never",
+    "OneHour",
+    "ThreeHours",
+    "SixHours",
+    "TwelveHours",
+    "TwentyFourHours",
+};
+
+/// host 端偏好配置。
+dictionary HostProfile {
+    /// 本地 Minecraft 服务端监听端口。
+    u16 port;
+    /// 跨发布生效的分享链接刷新策略。
+    TokenRefreshSetting token_refresh;
+};
+
+/// join 端偏好配置。
+dictionary JoinProfile {
+    /// 本地入站监听端口。
+    u16 port;
+};
+
+/// relay 偏好配置。
+dictionary RelayProfile {
+    /// true 启用自建中继，false 使用 iroh 内置中继。
+    boolean custom;
+    /// 自建中继地址，仅 custom = true 时生效。
+    string? url;
+};
+
+/// 用户偏好配置根结构。
+dictionary Profile {
+    HostProfile host;
+    JoinProfile join;
+    RelayProfile relay;
 };
 
 /// 隧道生命周期阶段。
@@ -159,6 +379,39 @@ dictionary TunnelUpdate {
     TunnelEvent? event;
 };
 
+/// 节点密钥。
+interface SecretKey {
+    /// 导出 32 字节。
+    sequence<u8> to_bytes();
+    /// 对应公钥的 EndpointId。
+    string public_key();
+};
+
+/// 服务的稳定逻辑标识。
+interface ServiceId {
+    /// 导出 16 字节。
+    sequence<u8> to_bytes();
+};
+
+/// 仅在当前 Host 会话中有效的访问令牌。
+interface AccessToken {
+    /// 导出 32 字节。
+    sequence<u8> to_bytes();
+    /// 以常量时间比较两个令牌。
+    boolean matches(sequence<u8> other);
+};
+
+/// `sculk://join/v1/` 分享 URI。
+interface JoinUri {
+    /// 导出含访问令牌的完整 URI（仅用于分享，勿写入日志）。
+    [Throws=ScuLkError]
+    string expose_secret_uri();
+    /// 自定义中继地址。
+    string? relay_url();
+    /// 脱敏后的展示形式（不含访问令牌）。
+    string redacted();
+};
+
 /// 单实例托管隧道服务（Clone 语义由 Rust 侧对象共享）。
 interface TunnelService {
     constructor();
@@ -184,6 +437,82 @@ interface TunnelService {
 interface Subscription {
     [Throws=ScuLkError, Async]
     TunnelUpdate? recv();
+};
+
+/// 多服务 Host 节点。
+interface SculkNode {
+    /// 发布服务并返回其操作句柄。
+    [Throws=ScuLkError, Async]
+    HostedServiceHandle start_service(HostedServiceOptions options);
+
+    /// 停止一个服务；不会关闭 Node 或影响其他服务。
+    [Throws=ScuLkError, Async]
+    void stop_service(sequence<u8> service_id);
+
+    /// 当前已发布的服务数量。
+    [Async]
+    u64 service_count();
+
+    /// Node 的稳定状态快照。
+    [Async]
+    SculkNodeStatus status();
+
+    /// 为指定服务生成新令牌，并返回对应的新 Join URI。
+    [Throws=ScuLkError, Async]
+    JoinUri rotate_token(sequence<u8> service_id);
+
+    /// Node 的稳定 EndpointId。
+    string endpoint_id();
+
+    /// 停止所有服务并关闭 Node Endpoint。
+    [Async]
+    void shutdown();
+};
+
+/// 已发布服务的轻量操作句柄。
+interface HostedServiceHandle {
+    /// 服务标识（16 字节）。
+    sequence<u8> service_id();
+
+    /// 当前可分享 Join URI。
+    [Throws=ScuLkError, Async]
+    JoinUri join_uri();
+
+    /// 当前令牌及其创建时刻。
+    [Throws=ScuLkError, Async]
+    TokenState token_state();
+
+    /// 服务的稳定状态快照。
+    [Throws=ScuLkError, Async]
+    HostedServiceStatus status();
+
+    /// 独立停止此服务。
+    [Throws=ScuLkError, Async]
+    void stop();
+
+    /// 立即轮换访问令牌，并返回新的 Join URI。
+    [Throws=ScuLkError, Async]
+    JoinUri rotate_token();
+
+    /// 订阅此服务的过程事件。
+    [Throws=ScuLkError, Async]
+    HostedServiceEventReader subscribe();
+
+    /// 订阅此服务可恢复的状态快照。
+    [Throws=ScuLkError, Async]
+    HostedServiceStatusSubscription subscribe_status();
+};
+
+/// 服务过程事件读取端；recv 返回 null 表示订阅已关闭。
+interface HostedServiceEventReader {
+    [Async]
+    TunnelEvent? recv();
+};
+
+/// 服务状态订阅端；recv 返回 null 表示订阅已关闭。
+interface HostedServiceStatusSubscription {
+    [Async]
+    HostedServiceStatus? recv();
 };
 
 /// LAN 公告扫描器。
@@ -220,4 +549,12 @@ enum ScuLkError {
     "ResourceLimit",
     "InvalidConfiguration",
     "Internal",
+    "TargetNotLoopback",
+    "InvalidTargetPort",
+    "DuplicateService",
+    "ServiceNotFound",
+    "RotationInProgress",
+    "InvalidRefreshPeriod",
+    "SessionGenerationExhausted",
+    "BindEndpoint",
 };

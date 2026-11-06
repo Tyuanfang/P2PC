@@ -20,6 +20,231 @@ final class UniffiLib {
             .orElseThrow(() -> new RuntimeException("Missing FFI symbol: " + name));
     }
 
+    // uniffi_sculk_ffi_fn_clone_accesstoken
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_accesstoken = findDowncallHandle("uniffi_sculk_ffi_fn_clone_accesstoken", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_accesstoken(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_accesstoken.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_accesstoken
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_accesstoken = findDowncallHandle("uniffi_sculk_ffi_fn_free_accesstoken", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_accesstoken(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_accesstoken.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_accesstoken_matches
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_accesstoken_matches = findDowncallHandle("uniffi_sculk_ffi_fn_method_accesstoken_matches", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_BYTE, java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static byte uniffi_sculk_ffi_fn_method_accesstoken_matches(long ptr, java.lang.foreign.MemorySegment other, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (byte) MH_uniffi_sculk_ffi_fn_method_accesstoken_matches.invokeExact(ptr, other, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_accesstoken_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_accesstoken_to_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_method_accesstoken_to_bytes", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_accesstoken_to_bytes(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_accesstoken_to_bytes.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_hostedserviceeventreader
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_hostedserviceeventreader = findDowncallHandle("uniffi_sculk_ffi_fn_clone_hostedserviceeventreader", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_hostedserviceeventreader(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_hostedserviceeventreader.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_hostedserviceeventreader
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_hostedserviceeventreader = findDowncallHandle("uniffi_sculk_ffi_fn_free_hostedserviceeventreader", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_hostedserviceeventreader(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_hostedserviceeventreader.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedserviceeventreader_recv
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedserviceeventreader_recv = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedserviceeventreader_recv", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedserviceeventreader_recv(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedserviceeventreader_recv.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_hostedservicehandle
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_hostedservicehandle = findDowncallHandle("uniffi_sculk_ffi_fn_clone_hostedservicehandle", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_hostedservicehandle(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_hostedservicehandle.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_hostedservicehandle
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_hostedservicehandle = findDowncallHandle("uniffi_sculk_ffi_fn_free_hostedservicehandle", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_hostedservicehandle(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_hostedservicehandle.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_join_uri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_join_uri = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_join_uri", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_join_uri(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_join_uri.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_rotate_token
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_rotate_token = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_rotate_token", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_rotate_token(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_rotate_token.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_service_id
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_service_id = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_service_id", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_hostedservicehandle_service_id(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_service_id.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_status = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_status(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_status.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_stop
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_stop = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_stop", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_stop(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_stop.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe_status = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe_status(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_subscribe_status.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicehandle_token_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_token_state = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicehandle_token_state", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicehandle_token_state(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicehandle_token_state.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_hostedservicestatussubscription
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_hostedservicestatussubscription = findDowncallHandle("uniffi_sculk_ffi_fn_clone_hostedservicestatussubscription", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_hostedservicestatussubscription(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_hostedservicestatussubscription.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_hostedservicestatussubscription
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_hostedservicestatussubscription = findDowncallHandle("uniffi_sculk_ffi_fn_free_hostedservicestatussubscription", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_hostedservicestatussubscription(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_hostedservicestatussubscription.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_hostedservicestatussubscription_recv
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_hostedservicestatussubscription_recv = findDowncallHandle("uniffi_sculk_ffi_fn_method_hostedservicestatussubscription_recv", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_hostedservicestatussubscription_recv(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_hostedservicestatussubscription_recv.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_joinuri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_joinuri = findDowncallHandle("uniffi_sculk_ffi_fn_clone_joinuri", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_joinuri(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_joinuri.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_joinuri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_joinuri = findDowncallHandle("uniffi_sculk_ffi_fn_free_joinuri", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_joinuri(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_joinuri.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_joinuri_expose_secret_uri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_joinuri_expose_secret_uri = findDowncallHandle("uniffi_sculk_ffi_fn_method_joinuri_expose_secret_uri", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_joinuri_expose_secret_uri(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_joinuri_expose_secret_uri.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_joinuri_redacted
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_joinuri_redacted = findDowncallHandle("uniffi_sculk_ffi_fn_method_joinuri_redacted", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_joinuri_redacted(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_joinuri_redacted.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_joinuri_relay_url
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_joinuri_relay_url = findDowncallHandle("uniffi_sculk_ffi_fn_method_joinuri_relay_url", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_joinuri_relay_url(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_joinuri_relay_url.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
     // uniffi_sculk_ffi_fn_clone_lanbroadcaster
     private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_lanbroadcaster = findDowncallHandle("uniffi_sculk_ffi_fn_clone_lanbroadcaster", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
 
@@ -98,6 +323,150 @@ final class UniffiLib {
     static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_lanscanner_try_recv(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
         try {
             return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_lanscanner_try_recv.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_sculknode
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_sculknode = findDowncallHandle("uniffi_sculk_ffi_fn_clone_sculknode", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_sculknode(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_sculknode.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_sculknode
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_sculknode = findDowncallHandle("uniffi_sculk_ffi_fn_free_sculknode", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_sculknode(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_sculknode.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_endpoint_id
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_endpoint_id = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_endpoint_id", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_sculknode_endpoint_id(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_sculknode_endpoint_id.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_rotate_token
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_rotate_token = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_rotate_token", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_rotate_token(long ptr, java.lang.foreign.MemorySegment serviceId) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_rotate_token.invokeExact(ptr, serviceId);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_service_count
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_service_count = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_service_count", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_service_count(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_service_count.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_shutdown
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_shutdown = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_shutdown", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_shutdown(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_shutdown.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_start_service
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_start_service = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_start_service", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_start_service(long ptr, java.lang.foreign.MemorySegment options) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_start_service.invokeExact(ptr, options);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_status = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_status(long ptr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_status.invokeExact(ptr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_sculknode_stop_service
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_sculknode_stop_service = findDowncallHandle("uniffi_sculk_ffi_fn_method_sculknode_stop_service", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT));
+
+    static long uniffi_sculk_ffi_fn_method_sculknode_stop_service(long ptr, java.lang.foreign.MemorySegment serviceId) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_method_sculknode_stop_service.invokeExact(ptr, serviceId);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_secretkey
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_secretkey = findDowncallHandle("uniffi_sculk_ffi_fn_clone_secretkey", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_secretkey(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_secretkey.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_secretkey
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_secretkey = findDowncallHandle("uniffi_sculk_ffi_fn_free_secretkey", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_secretkey(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_secretkey.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_secretkey_public_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_secretkey_public_key = findDowncallHandle("uniffi_sculk_ffi_fn_method_secretkey_public_key", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_secretkey_public_key(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_secretkey_public_key.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_secretkey_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_secretkey_to_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_method_secretkey_to_bytes", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_secretkey_to_bytes(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_secretkey_to_bytes.invokeExact(_allocator, ptr, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_clone_serviceid
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_clone_serviceid = findDowncallHandle("uniffi_sculk_ffi_fn_clone_serviceid", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_clone_serviceid(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_clone_serviceid.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_free_serviceid
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_free_serviceid = findDowncallHandle("uniffi_sculk_ffi_fn_free_serviceid", java.lang.foreign.FunctionDescriptor.ofVoid(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_free_serviceid(long handle, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_free_serviceid.invokeExact(handle, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_method_serviceid_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_method_serviceid_to_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_method_serviceid_to_bytes", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_method_serviceid_to_bytes(java.lang.foreign.SegmentAllocator _allocator, long ptr, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_method_serviceid_to_bytes.invokeExact(_allocator, ptr, _uniffiOutErr);
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
@@ -209,6 +578,24 @@ final class UniffiLib {
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
+    // uniffi_sculk_ffi_fn_func_access_token_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_access_token_from_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_func_access_token_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_access_token_from_bytes(java.lang.foreign.MemorySegment bytes, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_access_token_from_bytes.invokeExact(bytes, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_access_token_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_access_token_generate = findDowncallHandle("uniffi_sculk_ffi_fn_func_access_token_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_access_token_generate(java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_access_token_generate.invokeExact(_uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
     // uniffi_sculk_ffi_fn_func_default_inlet_port
     private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_default_inlet_port = findDowncallHandle("uniffi_sculk_ffi_fn_func_default_inlet_port", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT, java.lang.foreign.ValueLayout.ADDRESS));
 
@@ -224,6 +611,15 @@ final class UniffiLib {
     static short uniffi_sculk_ffi_fn_func_default_mc_port(java.lang.foreign.MemorySegment _uniffiOutErr) {
         try {
             return (short) MH_uniffi_sculk_ffi_fn_func_default_mc_port.invokeExact(_uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_join_uri_parse
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_join_uri_parse = findDowncallHandle("uniffi_sculk_ffi_fn_func_join_uri_parse", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_join_uri_parse(java.lang.foreign.MemorySegment uri, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_join_uri_parse.invokeExact(uri, _uniffiOutErr);
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
@@ -245,12 +641,156 @@ final class UniffiLib {
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
+    // uniffi_sculk_ffi_fn_func_persist_data_dir
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_data_dir = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_data_dir", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_data_dir(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_data_dir.invokeExact(_allocator, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_default_host_state_path
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_default_host_state_path = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_default_host_state_path", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_default_host_state_path(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_default_host_state_path.invokeExact(_allocator, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_default_key_path
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_default_key_path = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_default_key_path", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_default_key_path(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_default_key_path.invokeExact(_allocator, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_generate_new_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_generate_new_key = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_generate_new_key", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_persist_generate_new_key(java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_persist_generate_new_key.invokeExact(path, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_load_host_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_load_host_state = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_load_host_state", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_load_host_state(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_load_host_state.invokeExact(_allocator, path, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_load_or_generate_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_load_or_generate_key = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_load_or_generate_key", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_persist_load_or_generate_key(java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_persist_load_or_generate_key.invokeExact(path, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_load_profile
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_load_profile = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_load_profile", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_load_profile(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_load_profile.invokeExact(_allocator, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_load_profile_from
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_load_profile_from = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_load_profile_from", java.lang.foreign.FunctionDescriptor.of(RustBuffer.LAYOUT, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static java.lang.foreign.MemorySegment uniffi_sculk_ffi_fn_func_persist_load_profile_from(java.lang.foreign.SegmentAllocator _allocator, java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (java.lang.foreign.MemorySegment) MH_uniffi_sculk_ffi_fn_func_persist_load_profile_from.invokeExact(_allocator, path, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_save_host_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_save_host_state = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_save_host_state", java.lang.foreign.FunctionDescriptor.ofVoid(RustBuffer.LAYOUT, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_func_persist_save_host_state(java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment state, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_func_persist_save_host_state.invokeExact(path, state, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_save_profile
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_save_profile = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_save_profile", java.lang.foreign.FunctionDescriptor.ofVoid(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_func_persist_save_profile(java.lang.foreign.MemorySegment profile, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_func_persist_save_profile.invokeExact(profile, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_persist_save_profile_to
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_persist_save_profile_to = findDowncallHandle("uniffi_sculk_ffi_fn_func_persist_save_profile_to", java.lang.foreign.FunctionDescriptor.ofVoid(RustBuffer.LAYOUT, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static void uniffi_sculk_ffi_fn_func_persist_save_profile_to(java.lang.foreign.MemorySegment path, java.lang.foreign.MemorySegment profile, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            MH_uniffi_sculk_ffi_fn_func_persist_save_profile_to.invokeExact(path, profile, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
     // uniffi_sculk_ffi_fn_func_probe_server
     private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_probe_server = findDowncallHandle("uniffi_sculk_ffi_fn_func_probe_server", java.lang.foreign.FunctionDescriptor.ofVoid(RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
 
     static void uniffi_sculk_ffi_fn_func_probe_server(java.lang.foreign.MemorySegment addr, long timeoutMs, java.lang.foreign.MemorySegment _uniffiOutErr) {
         try {
             MH_uniffi_sculk_ffi_fn_func_probe_server.invokeExact(addr, timeoutMs, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_sculpt_node_bind
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_sculpt_node_bind = findDowncallHandle("uniffi_sculk_ffi_fn_func_sculpt_node_bind", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT));
+
+    static long uniffi_sculk_ffi_fn_func_sculpt_node_bind(java.lang.foreign.MemorySegment options) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_sculpt_node_bind.invokeExact(options);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_secret_key_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_secret_key_from_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_func_secret_key_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_secret_key_from_bytes(java.lang.foreign.MemorySegment bytes, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_secret_key_from_bytes.invokeExact(bytes, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_secret_key_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_secret_key_generate = findDowncallHandle("uniffi_sculk_ffi_fn_func_secret_key_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_secret_key_generate(java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_secret_key_generate.invokeExact(_uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_service_id_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_service_id_from_bytes = findDowncallHandle("uniffi_sculk_ffi_fn_func_service_id_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, RustBuffer.LAYOUT, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_service_id_from_bytes(java.lang.foreign.MemorySegment bytes, java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_service_id_from_bytes.invokeExact(bytes, _uniffiOutErr);
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_fn_func_service_id_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_fn_func_service_id_generate = findDowncallHandle("uniffi_sculk_ffi_fn_func_service_id_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_LONG, java.lang.foreign.ValueLayout.ADDRESS));
+
+    static long uniffi_sculk_ffi_fn_func_service_id_generate(java.lang.foreign.MemorySegment _uniffiOutErr) {
+        try {
+            return (long) MH_uniffi_sculk_ffi_fn_func_service_id_generate.invokeExact(_uniffiOutErr);
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
@@ -722,6 +1262,24 @@ final class UniffiLib {
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
+    // uniffi_sculk_ffi_checksum_func_access_token_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_access_token_from_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_func_access_token_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_access_token_from_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_access_token_from_bytes.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_access_token_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_access_token_generate = findDowncallHandle("uniffi_sculk_ffi_checksum_func_access_token_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_access_token_generate() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_access_token_generate.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
     // uniffi_sculk_ffi_checksum_func_default_inlet_port
     private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_default_inlet_port = findDowncallHandle("uniffi_sculk_ffi_checksum_func_default_inlet_port", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
 
@@ -737,6 +1295,15 @@ final class UniffiLib {
     static short uniffi_sculk_ffi_checksum_func_default_mc_port() {
         try {
             return (short) MH_uniffi_sculk_ffi_checksum_func_default_mc_port.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_join_uri_parse
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_join_uri_parse = findDowncallHandle("uniffi_sculk_ffi_checksum_func_join_uri_parse", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_join_uri_parse() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_join_uri_parse.invokeExact();
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
@@ -758,12 +1325,291 @@ final class UniffiLib {
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
+    // uniffi_sculk_ffi_checksum_func_persist_data_dir
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_data_dir = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_data_dir", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_data_dir() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_data_dir.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_default_host_state_path
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_default_host_state_path = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_default_host_state_path", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_default_host_state_path() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_default_host_state_path.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_default_key_path
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_default_key_path = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_default_key_path", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_default_key_path() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_default_key_path.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_generate_new_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_generate_new_key = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_generate_new_key", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_generate_new_key() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_generate_new_key.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_load_host_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_load_host_state = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_load_host_state", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_load_host_state() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_load_host_state.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_load_or_generate_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_load_or_generate_key = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_load_or_generate_key", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_load_or_generate_key() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_load_or_generate_key.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_load_profile
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_load_profile = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_load_profile", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_load_profile() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_load_profile.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_load_profile_from
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_load_profile_from = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_load_profile_from", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_load_profile_from() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_load_profile_from.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_save_host_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_save_host_state = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_save_host_state", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_save_host_state() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_save_host_state.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_save_profile
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_save_profile = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_save_profile", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_save_profile() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_save_profile.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_persist_save_profile_to
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_persist_save_profile_to = findDowncallHandle("uniffi_sculk_ffi_checksum_func_persist_save_profile_to", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_persist_save_profile_to() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_persist_save_profile_to.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
     // uniffi_sculk_ffi_checksum_func_probe_server
     private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_probe_server = findDowncallHandle("uniffi_sculk_ffi_checksum_func_probe_server", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
 
     static short uniffi_sculk_ffi_checksum_func_probe_server() {
         try {
             return (short) MH_uniffi_sculk_ffi_checksum_func_probe_server.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_sculpt_node_bind
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_sculpt_node_bind = findDowncallHandle("uniffi_sculk_ffi_checksum_func_sculpt_node_bind", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_sculpt_node_bind() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_sculpt_node_bind.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_secret_key_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_secret_key_from_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_func_secret_key_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_secret_key_from_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_secret_key_from_bytes.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_secret_key_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_secret_key_generate = findDowncallHandle("uniffi_sculk_ffi_checksum_func_secret_key_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_secret_key_generate() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_secret_key_generate.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_service_id_from_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_service_id_from_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_func_service_id_from_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_service_id_from_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_service_id_from_bytes.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_func_service_id_generate
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_func_service_id_generate = findDowncallHandle("uniffi_sculk_ffi_checksum_func_service_id_generate", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_func_service_id_generate() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_func_service_id_generate.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_accesstoken_matches
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_accesstoken_matches = findDowncallHandle("uniffi_sculk_ffi_checksum_method_accesstoken_matches", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_accesstoken_matches() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_accesstoken_matches.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_accesstoken_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_accesstoken_to_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_method_accesstoken_to_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_accesstoken_to_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_accesstoken_to_bytes.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedserviceeventreader_recv
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedserviceeventreader_recv = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedserviceeventreader_recv", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedserviceeventreader_recv() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedserviceeventreader_recv.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_join_uri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_join_uri = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_join_uri", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_join_uri() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_join_uri.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_rotate_token
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_rotate_token = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_rotate_token", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_rotate_token() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_rotate_token.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_service_id
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_service_id = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_service_id", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_service_id() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_service_id.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_status = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_status() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_status.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_stop
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_stop = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_stop", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_stop() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_stop.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe_status = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe_status() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_subscribe_status.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicehandle_token_state
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_token_state = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicehandle_token_state", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicehandle_token_state() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicehandle_token_state.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_hostedservicestatussubscription_recv
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_hostedservicestatussubscription_recv = findDowncallHandle("uniffi_sculk_ffi_checksum_method_hostedservicestatussubscription_recv", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_hostedservicestatussubscription_recv() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_hostedservicestatussubscription_recv.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_joinuri_expose_secret_uri
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_joinuri_expose_secret_uri = findDowncallHandle("uniffi_sculk_ffi_checksum_method_joinuri_expose_secret_uri", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_joinuri_expose_secret_uri() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_joinuri_expose_secret_uri.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_joinuri_redacted
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_joinuri_redacted = findDowncallHandle("uniffi_sculk_ffi_checksum_method_joinuri_redacted", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_joinuri_redacted() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_joinuri_redacted.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_joinuri_relay_url
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_joinuri_relay_url = findDowncallHandle("uniffi_sculk_ffi_checksum_method_joinuri_relay_url", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_joinuri_relay_url() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_joinuri_relay_url.invokeExact();
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 
@@ -809,6 +1655,96 @@ final class UniffiLib {
     static short uniffi_sculk_ffi_checksum_method_lanscanner_try_recv() {
         try {
             return (short) MH_uniffi_sculk_ffi_checksum_method_lanscanner_try_recv.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_endpoint_id
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_endpoint_id = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_endpoint_id", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_endpoint_id() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_endpoint_id.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_rotate_token
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_rotate_token = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_rotate_token", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_rotate_token() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_rotate_token.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_service_count
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_service_count = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_service_count", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_service_count() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_service_count.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_shutdown
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_shutdown = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_shutdown", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_shutdown() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_shutdown.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_start_service
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_start_service = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_start_service", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_start_service() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_start_service.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_status
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_status = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_status", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_status() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_status.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_sculknode_stop_service
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_sculknode_stop_service = findDowncallHandle("uniffi_sculk_ffi_checksum_method_sculknode_stop_service", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_sculknode_stop_service() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_sculknode_stop_service.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_secretkey_public_key
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_secretkey_public_key = findDowncallHandle("uniffi_sculk_ffi_checksum_method_secretkey_public_key", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_secretkey_public_key() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_secretkey_public_key.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_secretkey_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_secretkey_to_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_method_secretkey_to_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_secretkey_to_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_secretkey_to_bytes.invokeExact();
+        } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
+    }
+
+    // uniffi_sculk_ffi_checksum_method_serviceid_to_bytes
+    private static final java.lang.invoke.MethodHandle MH_uniffi_sculk_ffi_checksum_method_serviceid_to_bytes = findDowncallHandle("uniffi_sculk_ffi_checksum_method_serviceid_to_bytes", java.lang.foreign.FunctionDescriptor.of(java.lang.foreign.ValueLayout.JAVA_SHORT));
+
+    static short uniffi_sculk_ffi_checksum_method_serviceid_to_bytes() {
+        try {
+            return (short) MH_uniffi_sculk_ffi_checksum_method_serviceid_to_bytes.invokeExact();
         } catch (Throwable _ex) { throw new AssertionError("invokeExact failed", _ex); }
     }
 

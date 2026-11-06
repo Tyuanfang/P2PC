@@ -23,6 +23,14 @@ public enum FfiConverterTypeScuLkError implements FfiConverterRustBuffer<ScuLkEx
             case 14 -> new ScuLkException.ResourceLimit(FfiConverterString.INSTANCE.read(buf));
             case 15 -> new ScuLkException.InvalidConfiguration(FfiConverterString.INSTANCE.read(buf));
             case 16 -> new ScuLkException.Internal(FfiConverterString.INSTANCE.read(buf));
+            case 17 -> new ScuLkException.TargetNotLoopback(FfiConverterString.INSTANCE.read(buf));
+            case 18 -> new ScuLkException.InvalidTargetPort(FfiConverterString.INSTANCE.read(buf));
+            case 19 -> new ScuLkException.DuplicateService(FfiConverterString.INSTANCE.read(buf));
+            case 20 -> new ScuLkException.ServiceNotFound(FfiConverterString.INSTANCE.read(buf));
+            case 21 -> new ScuLkException.RotationInProgress(FfiConverterString.INSTANCE.read(buf));
+            case 22 -> new ScuLkException.InvalidRefreshPeriod(FfiConverterString.INSTANCE.read(buf));
+            case 23 -> new ScuLkException.SessionGenerationExhausted(FfiConverterString.INSTANCE.read(buf));
+            case 24 -> new ScuLkException.BindEndpoint(FfiConverterString.INSTANCE.read(buf));
             default -> throw new java.lang.RuntimeException("invalid error enum value, something is very wrong!!");
         };
     }
@@ -82,6 +90,30 @@ public enum FfiConverterTypeScuLkError implements FfiConverterRustBuffer<ScuLkEx
             }
             case ScuLkException.Internal x -> {
                 buf.putInt(16);
+            }
+            case ScuLkException.TargetNotLoopback x -> {
+                buf.putInt(17);
+            }
+            case ScuLkException.InvalidTargetPort x -> {
+                buf.putInt(18);
+            }
+            case ScuLkException.DuplicateService x -> {
+                buf.putInt(19);
+            }
+            case ScuLkException.ServiceNotFound x -> {
+                buf.putInt(20);
+            }
+            case ScuLkException.RotationInProgress x -> {
+                buf.putInt(21);
+            }
+            case ScuLkException.InvalidRefreshPeriod x -> {
+                buf.putInt(22);
+            }
+            case ScuLkException.SessionGenerationExhausted x -> {
+                buf.putInt(23);
+            }
+            case ScuLkException.BindEndpoint x -> {
+                buf.putInt(24);
             }
             default -> throw new java.lang.RuntimeException("invalid error enum value, something is very wrong!!");
         };

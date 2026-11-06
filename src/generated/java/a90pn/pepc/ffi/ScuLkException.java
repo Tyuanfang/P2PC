@@ -90,6 +90,46 @@ public class ScuLkException extends java.lang.Exception {
         super(message);
       }
     }
+    public static class TargetNotLoopback extends ScuLkException {
+      public TargetNotLoopback(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class InvalidTargetPort extends ScuLkException {
+      public InvalidTargetPort(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class DuplicateService extends ScuLkException {
+      public DuplicateService(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class ServiceNotFound extends ScuLkException {
+      public ServiceNotFound(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class RotationInProgress extends ScuLkException {
+      public RotationInProgress(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class InvalidRefreshPeriod extends ScuLkException {
+      public InvalidRefreshPeriod(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class SessionGenerationExhausted extends ScuLkException {
+      public SessionGenerationExhausted(java.lang.String message) {
+        super(message);
+      }
+    }
+    public static class BindEndpoint extends ScuLkException {
+      public BindEndpoint(java.lang.String message) {
+        super(message);
+      }
+    }
     
 }
 

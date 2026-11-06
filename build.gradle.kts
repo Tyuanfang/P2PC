@@ -69,6 +69,19 @@ tasks.withType<JavaExec>().configureEach {
 	jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
+// sculk 原生库的平台标识与文件名（与 SculkClient.platformToken() 对应）
+val nativePlatforms = mapOf(
+	"windows-x86_64" to "sculk_ffi.dll",
+	"linux-x86_64" to "libsculk_ffi.so",
+	"linux-aarch64" to "libsculk_ffi.so",
+	"macos-x86_64" to "libsculk_ffi.dylib",
+	"macos-aarch64" to "libsculk_ffi.dylib",
+)
+// 已准备好的多平台原生库目录（CI 合并各平台产物、或本机手动放置）
+val preparedNatives = file("natives")
+// 本机 cargo 构建产物（cargo build -p sculk-ffi --release 的输出）
+val localNativeTarget = file("sculk/sculk-main/target/release")
+
 tasks.jar {
 	val projectName = project.name
 	inputs.property("projectName", projectName)
@@ -77,14 +90,30 @@ tasks.jar {
 		rename { "${it}_$projectName" }
 	}
 
-	// 把 Rust 侧构建出的 sculk_ffi.dll 打包进模组
-	val dll = file("sculk/sculk-main/target/release/sculk_ffi.dll")
-	if (dll.exists()) {
-		from(dll) {
-			into("natives/windows-x86_64")
+	// 1) 多平台目录：natives/<平台标识>/<库文件> 原样进 jar
+	if (preparedNatives.isDirectory) {
+		from(preparedNatives) {
+			into("natives")
 		}
-	} else {
-		println("[p2pc] 未找到 sculk_ffi.dll（${dll.path}），跳过原生库打包。先构建 Rust 侧：cargo build -p sculk-ffi --release")
+	}
+
+	// 2) 缺哪个平台就用本机构建产物补上（本地 Windows 开发时零拷贝）
+	var missingPlatforms = mutableListOf<String>()
+	nativePlatforms.forEach { (platform, libraryName) ->
+		val prepared = file("${preparedNatives.path}/$platform/$libraryName")
+		if (!prepared.exists()) {
+			val local = file("${localNativeTarget.path}/$libraryName")
+			if (local.exists()) {
+				from(local) {
+					into("natives/$platform")
+				}
+			} else {
+				missingPlatforms.add(platform)
+			}
+		}
+	}
+	if (missingPlatforms.isNotEmpty()) {
+		println("[p2pc] 缺少这些平台的原生库（可接受：其他平台的 CI 构建会补上）：$missingPlatforms")
 	}
 }
 
