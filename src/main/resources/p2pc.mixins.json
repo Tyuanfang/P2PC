@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "a90pn.pepc.mixin",
+	"package": "a90pn.p2pc.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"ExampleMixin"

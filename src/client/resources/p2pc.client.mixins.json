@@ -1,9 +1,9 @@
 {
 	"required": true,
-	"package": "a90pn.pepc.client.mixin",
+	"package": "a90pn.p2pc.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"ExampleClientMixin"
+      "a90pn.p2pc.client.mixin.ExampleClientMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

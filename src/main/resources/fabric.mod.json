@@ -16,10 +16,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"a90pn.pepc.P2PC"
+			"a90pn.p2pc.P2PC"
 		],
 		"client": [
-			"a90pn.pepc.client.P2PCClient"
+          "a90pn.p2pc.client.P2PCClient"
 		]
 	},
 	"mixins": [

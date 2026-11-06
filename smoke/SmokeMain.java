@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import a90pn.pepc.SculkClient;
-import a90pn.pepc.ffi.HostState;
-import a90pn.pepc.ffi.Profile;
-import a90pn.pepc.ffi.ScuLkException;
-import a90pn.pepc.ffi.SculkNode;
-import a90pn.pepc.ffi.TokenRefreshSetting;
-import a90pn.pepc.ffi.TunnelService;
-import a90pn.pepc.ffi.TunnelStatus;
+import a90pn.p2pc.SculkClient;
+import a90pn.p2pc.ffi.HostState;
+import a90pn.p2pc.ffi.Profile;
+import a90pn.p2pc.ffi.ScuLkException;
+import a90pn.p2pc.ffi.SculkNode;
+import a90pn.p2pc.ffi.TokenRefreshSetting;
+import a90pn.p2pc.ffi.TunnelService;
+import a90pn.p2pc.ffi.TunnelStatus;
 
 /** 不依赖 Minecraft 的冒烟测试：原生库加载、密钥/URI/持久化、节点绑定。 */
 public final class SmokeMain {
