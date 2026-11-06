@@ -22,13 +22,6 @@
           "a90pn.p2pc.client.P2PCClient"
 		]
 	},
-	"mixins": [
-		"p2pc.mixins.json",
-		{
-			"config": "p2pc.client.mixins.json",
-			"environment": "client"
-		}
-	],
 	"depends": {
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~1.21.1",
