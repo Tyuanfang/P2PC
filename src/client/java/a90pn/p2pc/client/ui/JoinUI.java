@@ -14,7 +14,7 @@ public class JoinUI extends Screen {
     final Screen parent;
     private EditBox nameBox;
 
-    protected JoinUI(Component component, Screen parent) {
+    public JoinUI(Component component, Screen parent) {
         super(component);
         this.parent = parent;
     }
@@ -70,9 +70,10 @@ public class JoinUI extends Screen {
         String text = this.nameBox.getValue();
         if (text.isBlank()) {
             if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.displayClientMessage(
-                        Component.literal("请输入内容！"), false);
+                Minecraft.getInstance().player.displayClientMessage(Component.literal("请输入内容！"), false);
             }
+            return;
         }
+
     }
 }
