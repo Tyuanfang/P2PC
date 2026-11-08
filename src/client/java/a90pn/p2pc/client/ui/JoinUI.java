@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -70,7 +71,11 @@ public class JoinUI extends Screen {
         String text = this.nameBox.getValue();
         if (text.isBlank()) {
             if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.displayClientMessage(Component.literal("请输入内容！"), false);
+                if (this.minecraft != null) {
+                    this.minecraft.getToasts().addToast(
+                            SystemToast.multiline(this.minecraft, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.nullToEmpty("请输入文本"), Component.nullToEmpty("This is a toast."))
+                    );
+                }
             }
             return;
         }
