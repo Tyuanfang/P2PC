@@ -82,27 +82,22 @@ val preparedNatives = file("natives")
 // 本机 cargo 构建产物（cargo build -p sculk-ffi --release 的输出）
 val localNativeTarget = file("sculk/sculk-main/target/release")
 
-tasks.jar {
-	val projectName = project.name
-	inputs.property("projectName", projectName)
-
-	from("LICENSE") {
-		rename { "${it}_$projectName" }
-	}
-
-	// 1) 多平台目录：natives/<平台标识>/<库文件> 原样进 jar
-	if (preparedNatives.isDirectory) {
-		from(preparedNatives) {
-			into("natives")
-		}
+// 原生库统一走 processResources：
+// - 打包进 jar（jar 默认包含 build/resources/main）
+// - 开发环境 runClient 直接读 build/resources/main，两边是同一份资源，
+//   不会再出现「jar 里有、dev 运行找不到」的差异。
+tasks.processResources {
+	// 1) 多平台目录：natives/<平台标识>/<库文件> 原样进 resources
+	from(preparedNatives) {
+		into("natives")
 	}
 
 	// 2) 缺哪个平台就用本机构建产物补上（本地 Windows 开发时零拷贝）
-	var missingPlatforms = mutableListOf<String>()
+	val missingPlatforms = mutableListOf<String>()
 	nativePlatforms.forEach { (platform, libraryName) ->
-		val prepared = file("${preparedNatives.path}/$platform/$libraryName")
-		if (!prepared.exists()) {
-			val local = file("${localNativeTarget.path}/$libraryName")
+		val staged = preparedNatives.resolve("$platform/$libraryName")
+		val local = localNativeTarget.resolve(libraryName)
+		if (!staged.exists()) {
 			if (local.exists()) {
 				from(local) {
 					into("natives/$platform")
@@ -112,8 +107,19 @@ tasks.jar {
 			}
 		}
 	}
-	if (missingPlatforms.isNotEmpty()) {
-		println("[p2pc] 缺少这些平台的原生库（可接受：其他平台的 CI 构建会补上）：$missingPlatforms")
+	doFirst {
+		if (missingPlatforms.isNotEmpty()) {
+			println("[p2pc] 缺少这些平台的原生库（可接受：CI 会为其他平台补上）：$missingPlatforms")
+		}
+	}
+}
+
+tasks.jar {
+	val projectName = project.name
+	inputs.property("projectName", projectName)
+
+	from("LICENSE") {
+		rename { "${it}_$projectName" }
 	}
 }
 
