@@ -1,4 +1,4 @@
-package a90pn.p2pc;
+package a90pn.p2pc.Sculk;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import a90pn.p2pc.ffi.HostConfig;
@@ -181,7 +182,7 @@ public final class SculkClient {
     /** 由 32 字节节点密钥导出 EndpointId 字符串。 */
     public static String secretKeyPublicKey(byte[] secretKey) throws ScuLkException {
         ensureLoaded();
-        return SculkFfi.secretKeyFromBytes(toByteList(secretKey)).publicKey();
+        return SculkFfi.secretKeyFromBytes(requiredBytes(secretKey, 32, "secretKey")).publicKey();
     }
 
     /** 生成新的 16 字节服务标识。 */
@@ -199,7 +200,8 @@ public final class SculkClient {
     /** 以常量时间比较两个 32 字节访问令牌。 */
     public static boolean accessTokenMatches(byte[] token, byte[] other) throws ScuLkException {
         ensureLoaded();
-        return SculkFfi.accessTokenFromBytes(toByteList(token)).matches(toByteList(other));
+        return SculkFfi.accessTokenFromBytes(requiredBytes(token, 32, "token"))
+                .matches(requiredBytes(other, 32, "other"));
     }
 
     // ------------------------------------------------------------------ 分享 URI
@@ -243,8 +245,12 @@ public final class SculkClient {
      */
     public static HostOptions hostOptions(int mcPort, String relayUrl, byte[] secretKey,
                                          byte[] serviceId, byte[] token, HostConfig config) {
-        return new HostOptions((short) mcPort, toByteList(secretKey), relayUrl,
-                toByteList(serviceId), toByteList(token), config);
+        return new HostOptions((short) mcPort,
+                optionalBytes(secretKey, 32, "secretKey"),
+                relayUrl,
+                optionalBytes(serviceId, 16, "serviceId"),
+                optionalBytes(token, 32, "token"),
+                config);
     }
 
     /** Join 端行为配置。reconnectTimeoutMs 传 null = 无限等待，0 = 关闭重连。 */
@@ -300,7 +306,8 @@ public final class SculkClient {
         if (status == null) {
             return null;
         }
-        return status.state().joinUri();
+        var state = status.state();
+        return state == null ? null : state.joinUri();
     }
 
     // ------------------------------------------------------------------ 事件流
@@ -310,8 +317,19 @@ public final class SculkClient {
      * 回调在内部守护线程上执行，别在里面做重活。
      */
     public static Watcher watch(TunnelService service, Consumer<TunnelUpdate> listener) {
+        return watch(service, listener, null);
+    }
+
+    /**
+     * 订阅隧道更新，并额外接收「事件流中断」通知。
+     *
+     * @param listener 更新回调（守护线程上执行）
+     * @param onError  事件泵遇到异常时的回调，可为 null（null 时打印到 stderr）
+     */
+    public static Watcher watch(TunnelService service, Consumer<TunnelUpdate> listener,
+                                Consumer<Throwable> onError) {
         ensureLoaded();
-        WireSubscription subscription = new WireSubscription(service.subscribe());
+        WireSubscription subscription = new WireSubscription(service.subscribe(), onError);
         Thread pump = new Thread(subscription::runPump, "p2pc-tunnel-events");
         pump.setDaemon(true);
         subscription.bind(pump, listener);
@@ -319,7 +337,13 @@ public final class SculkClient {
         return subscription;
     }
 
-    /** 事件流句柄：关掉它会结束内部线程并释放 Rust 侧订阅。 */
+    /**
+     * 事件流句柄：关掉它会释放 Rust 侧订阅并结束内部线程。
+     *
+     * <p>注意退出顺序：{@code recv()} 是阻塞的 FFI 调用，{@code interrupt()} 打不断它，
+     * 所以「先 close() 再 stop(service)/closeNode()」是最稳的收尾顺序——close() 会立刻
+     * 释放订阅对象，Rust 侧随之让 recv 返回 null，线程自然退出。
+     */
     public interface Watcher extends AutoCloseable {
         @Override
         void close();
@@ -327,12 +351,15 @@ public final class SculkClient {
 
     private static final class WireSubscription implements Watcher {
         private final Subscription subscription;
+        private final Consumer<Throwable> onError;
+        private final AtomicBoolean released = new AtomicBoolean(false);
         private volatile Thread thread;
         private Consumer<TunnelUpdate> listener;
         private volatile boolean closed = false;
 
-        WireSubscription(Subscription subscription) {
+        WireSubscription(Subscription subscription, Consumer<Throwable> onError) {
             this.subscription = subscription;
+            this.onError = onError;
         }
 
         void bind(Thread thread, Consumer<TunnelUpdate> listener) {
@@ -344,27 +371,66 @@ public final class SculkClient {
         void runPump() {
             try {
                 while (!closed) {
-                    TunnelUpdate update = subscription.recv().join();
+                    TunnelUpdate update;
+                    try {
+                        update = subscription.recv().join();
+                    } catch (RuntimeException error) {
+                        if (!closed) {
+                            report(error);
+                        }
+                        return;
+                    }
                     if (update == null) {
                         return;
                     }
                     Consumer<TunnelUpdate> current = listener;
                     if (current != null) {
-                        current.accept(update);
+                        try {
+                            current.accept(update);
+                        } catch (RuntimeException error) {
+                            // 回调自己抛异常不应该把整条事件流带走
+                            report(error);
+                        }
                     }
                 }
-            } catch (RuntimeException error) {
-                if (!closed) {
-                    throw error;
-                }
             } finally {
-                subscription.close();
+                release();
+            }
+        }
+
+        /** 事件泵异常上报（主动关闭时不打扰上层）。 */
+        private void report(Throwable error) {
+            if (closed) {
+                return;
+            }
+            Consumer<Throwable> handler = onError;
+            if (handler == null) {
+                error.printStackTrace();
+                return;
+            }
+            try {
+                handler.accept(error);
+            } catch (RuntimeException ignored) {
+                // 错误回调本身出错就吞掉，避免递归
+            }
+        }
+
+        /** 只释放一次：关闭 Rust 侧订阅对象（幂等）。 */
+        private void release() {
+            if (released.compareAndSet(false, true)) {
+                try {
+                    subscription.close();
+                } catch (RuntimeException ignored) {
+                    // 已经关过 / 底层已失效，忽略
+                }
             }
         }
 
         @Override
         public void close() {
             closed = true;
+            // 立即释放订阅对象：Rust 侧随后让阻塞中的 recv 返回 null
+            release();
             Thread current = thread;
             if (current != null) {
                 current.interrupt();
@@ -376,12 +442,13 @@ public final class SculkClient {
 
     /** 多服务节点的创建参数。 */
     public static NodeOptions nodeOptions(byte[] secretKey, String relayUrl, long unauthenticatedConnectionsMax) {
-        return new NodeOptions(toByteList(secretKey), relayUrl, unauthenticatedConnectionsMax);
+        return new NodeOptions(optionalBytes(secretKey, 32, "secretKey"), relayUrl,
+                unauthenticatedConnectionsMax);
     }
 
     /** 令牌状态（token 32 字节 + 创建时刻 Unix 毫秒）。 */
     public static TokenState tokenState(byte[] token, long createdAtMs) {
-        return new TokenState(toByteList(token), createdAtMs);
+        return new TokenState(requiredBytes(token, 32, "token"), createdAtMs);
     }
 
     /** 令牌刷新策略。 */
@@ -411,7 +478,8 @@ public final class SculkClient {
                                                            TokenState tokenState,
                                                            TokenRefreshPolicy tokenRefresh,
                                                            HostConfig config) {
-        return new HostedServiceOptions(toByteList(serviceId), targetAddr, tokenState, tokenRefresh, config);
+        return new HostedServiceOptions(requiredBytes(serviceId, 16, "serviceId"), targetAddr,
+                tokenState, tokenRefresh, config);
     }
 
     /** 创建多服务 Host 节点（单个 iroh Endpoint 上发布多个隔离服务）。 */
@@ -429,7 +497,7 @@ public final class SculkClient {
     /** 停止服务（不关闭 Node）。 */
     public static CompletableFuture<Void> stopService(SculkNode node, byte[] serviceId) {
         ensureLoaded();
-        return node.stopService(toByteList(serviceId));
+        return node.stopService(requiredBytes(serviceId, 16, "serviceId"));
     }
 
     /** 节点稳定状态快照。 */
@@ -447,7 +515,7 @@ public final class SculkClient {
     /** 为指定服务轮换令牌并返回新的分享 URI。 */
     public static CompletableFuture<JoinUri> rotateServiceToken(SculkNode node, byte[] serviceId) {
         ensureLoaded();
-        return node.rotateToken(toByteList(serviceId));
+        return node.rotateToken(requiredBytes(serviceId, 16, "serviceId"));
     }
 
     /** 停止所有服务并关闭 Node。 */
@@ -606,9 +674,6 @@ public final class SculkClient {
         if (raw == null) {
             return null;
         }
-        if (raw.length != 0 && raw.length != 16 && raw.length != 32) {
-            throw new IllegalArgumentException("长度必须是 16 或 32 字节，实际 " + raw.length);
-        }
         List<Byte> out = new ArrayList<>(raw.length);
         for (byte b : raw) {
             out.add(b);
@@ -616,6 +681,28 @@ public final class SculkClient {
         return out;
     }
 
+    /** 必填字段：长度不对立刻报错，别拖到 Rust 侧。 */
+    private static List<Byte> requiredBytes(byte[] raw, int expected, String field) {
+        if (raw == null) {
+            throw new IllegalArgumentException(field + " 不能为 null（需要 " + expected + " 字节）");
+        }
+        if (raw.length != expected) {
+            throw new IllegalArgumentException(field + " 必须是 " + expected + " 字节，实际 " + raw.length);
+        }
+        return toByteList(raw);
+    }
+
+    /** 可选字段：null 表示「让 Rust 侧自己生成/使用默认值」。 */
+    private static List<Byte> optionalBytes(byte[] raw, int expected, String field) {
+        return raw == null ? null : requiredBytes(raw, expected, field);
+    }
+
+    /**
+     * 同步等待一个 FFI future 完成。
+     *
+     * <p><b>阻塞调用</b>：内部 {@code join()} 会一直等到 Rust 侧返回。不要在 Minecraft
+     * 主线程调用；主线程要么用返回 future 的异步接口，要么把这里放到后台线程。
+     */
     private static <T> T await(CompletableFuture<T> future) throws ScuLkException {
         try {
             return future.join();
