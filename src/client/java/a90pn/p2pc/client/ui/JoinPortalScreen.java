@@ -2,6 +2,8 @@ package a90pn.p2pc.client.ui;
 
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.MassageKind;
+import a90pn.p2pc.Sculk.SculkManager;
+import a90pn.p2pc.Sculk.SculkStatues;
 import a90pn.p2pc.ffi.JoinConfig;
 import a90pn.p2pc.ffi.JoinOptions;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,17 +14,13 @@ import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.util.Mth;
 import net.minecraft.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.Map;
 
 
 public class JoinPortalScreen extends Screen {
@@ -69,10 +67,37 @@ public class JoinPortalScreen extends Screen {
     }
 
     private void startJoin() {
-        P2PC.getInstance().getSculkManager().join(
+        SculkManager manager = P2PC.getInstance().getSculkManager();
+        SculkStatues state = manager.getStatus();
+        // 正在开房间时不能再加入：直接报错，别动房间
+        if (state == SculkStatues.HOST) {
+            this.abortWithError("你正在开房间，请先停止房间再加入别人的世界");
+            return;
+        }
+        // 上一次的加入/错误状态先复位，否则 join 会直接返回、这里只能干等超时
+        if (state == SculkStatues.JOIN || state == SculkStatues.ERROR) {
+            try {
+                manager.close();
+            } catch (Throwable ignored) {
+                // 复位失败也继续尝试
+            }
+        }
+        manager.join(
                 new JoinOptions(this.inviteCode, (short) LOCAL_PORT, new JoinConfig(100L, 5000L, 1000L)),
                 (status, kind, message, reason) -> Minecraft.getInstance()
                         .execute(() -> this.onClientEvent(kind, message, reason)));
+    }
+
+    /** 直接跳错误页，不关闭隧道（用于「正在开房间」这类不该动房间的情况）。 */
+    private void abortWithError(String message) {
+        if (this.failed) {
+            return;
+        }
+        this.failed = true;
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(new JoinErrorScreen(this.parent, message));
+        }
     }
 
     private void onClientEvent(MassageKind kind, String message, String reason) {
@@ -126,13 +151,15 @@ public class JoinPortalScreen extends Screen {
             return;
         }
         String address = "127.0.0.1:" + LOCAL_PORT;
+        // 普通的登录连接：TransferState 必须传 null——传非 null 会被原版当成「转移连接」，
+        // 服务器会直接回「此服务器不接受转移」。parent 用标题界面，断开时不要退回这个过场页。
         ConnectScreen.startConnecting(
-                this,
+                this.parent,
                 minecraft,
                 ServerAddress.parseString(address),
                 new ServerData("P2PC 世界", address, ServerData.Type.OTHER),
                 false,
-                new TransferState(Map.<ResourceLocation, byte[]>of()));
+                null);
     }
 
     private void fail(String message) {
@@ -145,7 +172,10 @@ public class JoinPortalScreen extends Screen {
         } catch (Throwable ignored) {
             // 关闭失败挡住错误页
         }
-        this.minecraft.setScreen(new JoinErrorScreen(this.parent, message));
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(new JoinErrorScreen(this.parent, message));
+        }
     }
 
     @Override
@@ -157,7 +187,10 @@ public class JoinPortalScreen extends Screen {
                 // 忽略
             }
         }
-        this.minecraft.setScreen(this.parent);
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(this.parent);
+        }
     }
 
     // ------------------------------------------------------------------

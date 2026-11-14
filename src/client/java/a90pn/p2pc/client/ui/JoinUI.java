@@ -1,8 +1,10 @@
 package a90pn.p2pc.client.ui;
 
 import a90pn.p2pc.Sculk.SculkClient;
+import a90pn.p2pc.ffi.JoinUri;
 import a90pn.p2pc.ffi.ScuLkException;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -11,11 +13,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.Util;
 
-/**
- * 加入世界：输入好友分享的邀请码。
- *
- * <p>保持原版界面风格：原版背景、原版输入框与按钮，标题用普通白色字体居中。
- */
+
 public class JoinUI extends Screen {
     private static final int WIDGET_WIDTH = 220;
 
@@ -51,8 +49,6 @@ public class JoinUI extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // 注意：Screen.render 内部会先调用 renderBackground（标题界面全景 + 模糊层 + 暗色压暗），
-        // 再画输入框和按钮。所以我们的文字必须放在 super.render 之后，否则会被背景重新盖住。
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         long now = Util.getMillis();
@@ -86,21 +82,23 @@ public class JoinUI extends Screen {
     }
 
     private void submit() {
-        String raw = this.codeBox.getValue();
-        String code = raw == null ? "" : raw.replaceAll("\\s+", "");
+        String code = this.codeBox.getValue().replaceAll("\\s+", "");
         if (code.isEmpty()) {
             this.showError("请先输入邀请码", 1200L);
             return;
         }
-        try {
-            SculkClient.parseJoinUri(code);
+        try (JoinUri parsed = SculkClient.parseJoinUri(code)) {
+            // 只做一次本地校验，解析成功就能进传送门页
         } catch (ScuLkException error) {
             this.showError("邀请码无效：" + error.getMessage(), 1600L);
             return;
         } catch (Throwable ignored) {
             // 原生库问题留给传送门页与错误页处理
         }
-        this.minecraft.setScreen(new JoinPortalScreen(code, this.parent));
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(new JoinPortalScreen(code, this.parent));
+        }
     }
 
     private void showError(String text, long durationMs) {
@@ -110,6 +108,9 @@ public class JoinUI extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(this.parent);
+        }
     }
 }

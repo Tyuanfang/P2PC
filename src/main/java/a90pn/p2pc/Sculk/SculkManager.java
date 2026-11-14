@@ -16,6 +16,9 @@ public class SculkManager {
     TunnelStatus tunnelStatus;
     boolean isWatching = false;
     boolean isClosing = false;
+    /** 上一次上报的路径（relay/rtt），用于过滤核心重复的 PATH_CHANGED。 */
+    Boolean lastPathRelay;
+    long lastPathRtt;
     SculkClient.Watcher watcher;
 
     public SculkManager() {
@@ -29,15 +32,24 @@ public class SculkManager {
         tunnelService = SculkClient.newService();
         status = SculkStatues.AVAILABLE;
     }
+    public SculkStatues getStatus() {
+        return status;
+    }
+
+    public TunnelStatus getTunnelStatus() {
+        return tunnelStatus;
+    }
+
     public void join(JoinOptions joinOptions,ClientEvent event) {
         if (status == SculkStatues.JOIN) {
-            logger.error("在尝试加入{}时发生错误：已经加入了{}尝试关闭连接",joinOptions.joinUri(),this.joinOptions.joinUri());
+            logger.error("在尝试加入{}时发生错误：已经加入了{}，尝试关闭连接", joinOptions.joinUri(),
+                    this.joinOptions == null ? "(未知)" : this.joinOptions.joinUri());
             status = SculkStatues.ERROR;
             close();
             return;
         }
         if(status == SculkStatues.HOST) {
-            logger.error("在尝试加入{}时发生错误，已经是房主了，尝试复位",this.joinOptions.joinUri());
+            logger.error("在尝试加入{}时发生错误，已经是房主了，尝试复位", joinOptions.joinUri());
             status = SculkStatues.ERROR;
             close();
             return;
@@ -49,32 +61,59 @@ public class SculkManager {
             tunnelService = SculkClient.newService();
         }
         status = SculkStatues.JOIN;
+        this.joinOptions = joinOptions;
         tunnelService.startJoin(joinOptions);
         watch(event);
     }
-    public void close(){
+    public void host(HostOptions hostOptions,ClientEvent event) {
+        if (status == SculkStatues.JOIN) {
+            logger.error("在尝试成为房主时发生错误：处于加入状态");
+            return;
+        }
+        if(status == SculkStatues.HOST) {
+            logger.error("已经是房主了");
+            return;
+        }
+        if(status == SculkStatues.ERROR) {
+            return;
+        }
+        if(status == SculkStatues.IDLE) {
+            tunnelService = SculkClient.newService();
+        }
+        status = SculkStatues.HOST;
+        tunnelService.startHost(hostOptions);
+        watch(event);
+    }
+    public synchronized void close(){
         if(isClosing) {
             return;
         }
-        if (watcher != null) {
-            watcher.close();
-            watcher = null;
-        }
-        isWatching = false;
-
-        if (tunnelService != null) {
-            try {
-                SculkClient.stop(tunnelService).get(2, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                logger.warn("[p2pc] 停止隧道超时或异常", e);
+        isClosing = true;
+        try {
+            if (watcher != null) {
+                watcher.close();
+                watcher = null;
             }
-            tunnelService = null;
-        }
+            isWatching = false;
 
-        tunnelStatus = null;
-        joinOptions = null;
-        hostOptions = null;
-        status = SculkStatues.IDLE;
+            if (tunnelService != null) {
+                try {
+                    SculkClient.stop(tunnelService).get(2, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    logger.warn("[p2pc] 停止隧道超时或异常", e);
+                }
+                tunnelService = null;
+            }
+
+            tunnelStatus = null;
+            joinOptions = null;
+            hostOptions = null;
+            lastPathRelay = null;
+            lastPathRtt = 0L;
+            status = SculkStatues.IDLE;
+        } finally {
+            isClosing = false;
+        }
     }
     private void watch(ClientEvent event) {
         if (isWatching) return;
@@ -115,6 +154,7 @@ public class SculkManager {
                         event.clientEvent(status, MassageKind.INFO,
                                 "已连接", (tunnelEvent.isRelay() ? "中继" : "直连")
                                         + " rtt=" + tunnelEvent.rttMs() + "ms");
+
                     }
                     case DISCONNECTED -> {
                         logger.warn("连接断开 {} 原因 {}", tunnelEvent.remoteId(), tunnelEvent.reason());
@@ -123,11 +163,19 @@ public class SculkManager {
                         close();
                     }
                     case PATH_CHANGED -> {
-                        logger.info("路径切换 relay={} rtt={}ms",
-                                tunnelEvent.isRelay(), tunnelEvent.rttMs());
-                        event.clientEvent(status, MassageKind.INFO,
-                                "网络路径已切换", (tunnelEvent.isRelay() ? "中继" : "直连")
-                                        + " rtt=" + tunnelEvent.rttMs() + "ms");
+                        boolean relay = tunnelEvent.isRelay();
+                        long rtt = tunnelEvent.rttMs();
+                        boolean changed = this.lastPathRelay == null
+                                || this.lastPathRelay != relay
+                                || this.lastPathRtt != rtt;
+                        if (changed) {
+                            this.lastPathRelay = relay;
+                            this.lastPathRtt = rtt;
+                            logger.info("路径切换 relay={} rtt={}ms", relay, rtt);
+                            event.clientEvent(status, MassageKind.INFO,
+                                    "网络路径已切换", (relay ? "中继" : "直连")
+                                            + " rtt=" + rtt + "ms");
+                        }
                     }
                     case RECONNECTING -> {
                         Long wait = tunnelEvent.retryInMs();

@@ -213,6 +213,9 @@ public class JoinErrorScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        Minecraft minecraft = this.minecraft;
+        if (minecraft != null) {
+            minecraft.setScreen(this.parent);
+        }
     }
 }

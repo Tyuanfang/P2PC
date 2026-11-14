@@ -36,24 +36,32 @@ P2PC 是一个 Fabric 模组，目标是让 Minecraft 联机摆脱对公网服�
 | 绑定层 | UniFFI（生成 Java 绑定） |
 | 构建 | Gradle（Java 侧）+ Cargo（Rust 侧） |
 
-##开发者
+## 开发者
 1. A90PN：构思，主要代码编写者
 2. ZhgnNo：提供部分ui
 3. DeepSeek：协助编写了你能看见的99%中文（Release，Package，Actions，Commit，注释，Wiki）
 ## 当前状态
 
-项目处于早期开发阶段。当前重点是打通「Rust 核心 → UniFFI 绑定 → Java 模组调用」的链路，并验证 P2P 联机在真实网络环境下的可用性。后续计划包括房主审批 UI 完善、中继服务器可配置、多平台 native 库分发等。
+端到端联机链路已经跑通，处在「功能可用、界面打磨中」的阶段：
+
+- **Rust 核心 → UniFFI → Java**：`sculk-ffi` crate 暴露 sculk 的全量公开 API（隧道服务、多服务节点、密钥/令牌/邀请码、持久化、LAN 扫描与广播），`uniffi-bindgen-java` 生成 Panama FFM 绑定，模组侧统一门面为 `a90pn.p2pc.SculkClient`。
+- **房主侧**：暂停菜单的「对局域网开放」被换成 P2PC 房间设置页——游戏模式 / 允许作弊 / 端口 / 允许离线玩家 / 启用 PvP / 服务器描述（MOTD）；创建后进入房间页，显示邀请码与在线人数，可复制邀请码、停止房间。
+- **加入侧**：输入邀请码后播放下界传送门搭建动画，隧道握手成功（收到「已连接」）后自动连接 `127.0.0.1:25565` 进入世界；任何错误则播放 TNT 爆炸动画，展示错误原因并提供返回主界面的按钮。
+- **多平台**：CI 用矩阵分别构建 Windows x86_64 / Linux x86_64 / Linux aarch64 / macOS x86_64 / macOS aarch64 原生库，合并进同一个模组 jar（`natives/<platform>/`），客户端按系统自动选择加载。
+- **收尾**：离开服务器或世界时自动关闭隧道；创建/加入两端的设置持久化在 `config/p2pc-client.properties`。
+
+接下来重点：房主审批 UI、多人场景下的中继表现测试、中继服务器可配置。
 
 ## 路线图
 
-- [ ] Rust 核心最小可用：开房 / 加入 / 关闭 + 事件回调
-- [ ] UniFFI Java 绑定生成与模组内加载
-- [ ] 房间创建与加入流程跑通
-- [ ] 加入者自动连接 MC 世界
-- [ ] 直连/中继状态展示
+- [x] Rust 核心最小可用：开房 / 加入 / 关闭 + 事件回调
+- [x] UniFFI Java 绑定生成与模组内加载
+- [x] 房间创建与加入流程跑通
+- [x] 加入者自动连接 MC 世界
+- [x] 直连/中继状态展示
 - [ ] 房主审批功能
 - [ ] 多人场景测试与中继配置
-- [ ] 多平台（Windows / Linux / macOS）native 库打包
+- [x] 多平台（Windows / Linux / macOS）native 库打包
 
 ## 致谢
 

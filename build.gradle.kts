@@ -14,6 +14,16 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	// 开发运行时的 JVM 参数：Java 25 对 Mixin 反射写 final 字段、Guava 用 sun.misc.Unsafe
+	// 这类老库行为会刷警告，这里只是把噪音关掉（JDK 26 起 final 字段改写入会直接禁止，
+	// 那是 Fabric/Mixin 升级的事，模组侧改不了）。
+	runs {
+		named("client") {
+			vmArg("--enable-final-field-mutation=ALL-UNNAMED")
+			vmArg("--sun-misc-unsafe-memory-access=allow")
+		}
+	}
+
 	mods {
 		register("p2pc") {
 			sourceSet(sourceSets.main.get())
