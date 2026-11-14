@@ -22,6 +22,9 @@
 		],
 		"client": [
           "a90pn.p2pc.client.P2PCClient"
+		],
+		"modmenu": [
+			"a90pn.p2pc.client.ModMenuIntegration"
 		]
 	},
 	"depends": {
@@ -29,5 +32,8 @@
 		"minecraft": "~1.21.1",
 		"java": ">=22",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": ">=11.0.0"
 	}
 }

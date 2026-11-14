@@ -9,6 +9,11 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
+	// Mod Menu（可选依赖）：模组列表里的设置入口
+	maven {
+		name = "TerraformersMC"
+		url = uri("https://maven.terraformersmc.com/releases/")
+	}
 }
 
 loom {
@@ -40,6 +45,11 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+
+	// Mod Menu：编译期可选依赖（运行时没有就不注册入口，不影响模组本身）。
+	// 版本号见 gradle.properties；1.21.1 对应 11.x。
+	modCompileOnly("com.terraformersmc:modmenu:${providers.gradleProperty("mod_menu_version").get()}")
+	modLocalRuntime("com.terraformersmc:modmenu:${providers.gradleProperty("mod_menu_version").get()}")
 }
 
 tasks.processResources {

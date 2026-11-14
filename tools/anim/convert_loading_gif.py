@@ -1,9 +1,6 @@
 """
 把 textures/gui/loading.gif 转成 Minecraft 能当贴图用的横向 sprite sheet。
 
-Minecraft 的贴图管线只认 PNG，GIF 没法直接当 GUI 贴图画；这里把每一帧横向拼成
-loading_frames.png（64 帧 × 16×16 = 1024×16），游戏里用 AnimSheet.LOADING 逐帧播放。
-
 用法（Windows 上用带 Pillow 的 Python）：
     python tools/anim/convert_loading_gif.py
 """

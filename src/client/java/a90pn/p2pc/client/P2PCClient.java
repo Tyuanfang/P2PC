@@ -9,6 +9,7 @@ import a90pn.p2pc.client.ui.LanShareButton;
 import a90pn.p2pc.client.ui.PearlButton;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -28,11 +29,15 @@ public class P2PCClient implements ClientModInitializer {
 		// 离开服务器/世界时把隧道收掉：否则管理器会一直开着 watch，
 		// 连接状态日志刷个不停（连接被拒、断线、退出世界都会走到这里）。
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			LanAnnouncer.stop();
 			P2PC mod = P2PC.getInstance();
 			if (mod != null && mod.getSculkManager() != null) {
 				mod.getSculkManager().close();
 			}
 		});
+
+		// 加入别人的世界后，把本机隧道入口以原版 LAN 公告的形式广播出去（可在设置里关掉）
+		ClientTickEvents.END_CLIENT_TICK.register(client -> LanAnnouncer.tick());
 
 		// 右上角网络状态队列：只在「加入别人世界」时显示（加载中 / 备用节点 / 高延迟）
 		HudRenderCallback.EVENT.register(new NetworkStatusHud());
@@ -87,6 +92,20 @@ public class P2PCClient implements ClientModInitializer {
 				return;
 			}
 		}
+
+		// 兼容别的「自定义局域网联机」模组：它们可能把原版按钮的文字/位置也改掉了，
+		// 这时按文字找不到槽位。如果正在开房间，就在按钮列最下面补一个管理入口，保证还能回去看邀请码。
+		boolean hosting = P2PC.getInstance().getSculkManager().getStatus() == SculkStatues.HOST;
+		if (!hosting || buttons.isEmpty()) {
+			return;
+		}
+		AbstractWidget last = buttons.get(buttons.size() - 1);
+		int y = last.getY() + last.getHeight() + 4;
+		if (y + 20 > screen.height - 8) {
+			return;
+		}
+		buttons.add(new LanShareButton(last.getX(), y, last.getWidth(), last.getHeight(),
+				Component.literal("管理房间"), button -> openHostPanel(screen)));
 	}
 
 	private static void openHostPanel(net.minecraft.client.gui.screens.Screen parent) {
