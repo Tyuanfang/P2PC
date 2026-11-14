@@ -7,100 +7,46 @@ on:
       - main
       - beta
   pull_request:
-  merge_group:
   workflow_dispatch:
 
 permissions:
-  issues: write
-  checks: write
-  contents: write
-  pull-requests: write
-
-env:
-  RELEASE_TYPE: ${{ endsWith(github.ref_name, 'main') && 'stable' || (endsWith(github.ref_name, 'beta') && 'beta' || 'alpha') }}
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ !endsWith(github.ref_name, 'main') && !endsWith(github.ref_name, 'beta') }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: "⬇️ Checkout"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: "☕ Setup JDK"
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - name: "☕ Setup JDK 25"
+        uses: actions/setup-java@v4
         with:
-          cache: gradle
-          cache-dependency-path: |
-            versions/dependencies/*.properties
-            *.properties
-            *.gradle.kts
+          distribution: temurin
           java-version: |
             25
-          check-latest: true
-          distribution: temurin
+          cache: gradle
 
       - name: "🛂 Setup Gradle"
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-        with:
-          validate-wrappers: true
-          cache-provider: basic
+        uses: gradle/actions/setup-gradle@v4
 
       - name: "🔓 Adjust script permissions"
-        run: chmod +x ./gradlew ./scripts/release.sh
+        run: chmod +x ./gradlew
 
-      - name: "🔎 Determine version"
-        id: get-next-version
-        uses: cycjimmy/semantic-release-action@8be816a60e417d22b0e09b61adc23605036497eb # v7.1.0
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          dry_run: true
-          extra_plugins: |
-            @meza/mezas-conventional-changelog
-            @semantic-release/changelog@6.0.0
-            @semantic-release/exec
-            @semantic-release/github
-            conventional-changelog-conventionalcommits
-            semantic-release-export-data
-
-      - name: "🧪 Run Dev Build"
-        if: ${{ steps.get-next-version.outputs.new_release_published != 'true' }}
+      - name: "🏗️ Build all configured version-loader pairs"
         run: ./gradlew buildAndCollect --stacktrace
 
-      - name: "🏗️ Build, Test & Release"
-        if: ${{ steps.get-next-version.outputs.new_release_published == 'true' }}
-        uses: cycjimmy/semantic-release-action@8be816a60e417d22b0e09b61adc23605036497eb # v7.1.0
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DO_PUBLISH: ${{ steps.get-next-version.outputs.new_release_published == 'true' }}
-          MODRINTH_ID: ${{ vars.MODRINTH_ID }}
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          CURSEFORGE_ID: ${{ vars.CURSEFORGE_ID }}
-          CURSEFORGE_SLUG: ${{ vars.CURSEFORGE_SLUG }}
-          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          extra_plugins: |
-            @meza/mezas-conventional-changelog
-            @semantic-release/changelog@6.0.0
-            @semantic-release/exec
-            @semantic-release/github
-            conventional-changelog-conventionalcommits
-            semantic-release-export-data
-
-      - name: "🕵️‍♂️ Collect artifacts"
+      - name: "🕵️ Collect artifacts"
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@v4
         with:
           name: Artifacts
           path: |
             build/libs/*.jar
             build/reports/**/*
-            versions/*/build/reports/**/*
