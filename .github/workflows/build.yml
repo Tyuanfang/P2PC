@@ -3,6 +3,7 @@ name: build
 on:
   push:
     branches:
+      - master
       - main
       - beta
   pull_request:
@@ -71,7 +72,7 @@ jobs:
 
       - name: "🧪 Run Dev Build"
         if: ${{ steps.get-next-version.outputs.new_release_published != 'true' }}
-        run: ./gradlew runDatagen runGameTestServer buildAndCollect --stacktrace
+        run: ./gradlew buildAndCollect --stacktrace
 
       - name: "🏗️ Build, Test & Release"
         if: ${{ steps.get-next-version.outputs.new_release_published == 'true' }}
