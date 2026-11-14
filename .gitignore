@@ -1,0 +1,54 @@
+# minecraft
+run/
+
+# gradle
+secrets.gradle
+.kotlin/
+.gradle/
+build/
+**/build/
+out/
+classes/
+versions/*-*/**
+!gradle-wrapper.jar
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Cache of project
+.gradletasknamecache
+
+# Documentation
+**/node_modules
+**/.docusaurus
+
+# idea
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macos
+*.DS_Store
+
+# java
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+
+
+# sculk Rust 构建产物
+sculk/sculk-main/target/
+sculk/sculk-main/**/*.log
+
+# 本地构建日志
+*.log

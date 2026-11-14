@@ -1,0 +1,14 @@
+/target
+.worktrees/
+docs/plans
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.claude

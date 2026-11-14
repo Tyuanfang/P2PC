@@ -1,0 +1,4 @@
+# uniffi-bindgen-java 的全局配置（新版 -c 只认 [defaults]/[crates.<name>]/[crate-roots] 结构）
+[defaults.bindings.java]
+package_name = "a90pn.p2pc.ffi"
+cdylib_name = "sculk_ffi"

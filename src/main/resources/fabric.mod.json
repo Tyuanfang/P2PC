@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+
+  "name": "${name}",
+  "description": "${description}",
+  "authors": [
+    "A90PN",
+    "ZhgnNo"
+  ],
+
+  "contact": {
+    "homepage": "https://github.com/Tyuanfang/P2PC",
+    "sources": "https://github.com/Tyuanfang/P2PC",
+    "issues": "https://github.com/Tyuanfang/P2PC/issues"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/${id}/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "a90pn.p2pc.P2PC"
+    ],
+    "client": [
+      "a90pn.p2pc.client.P2PCClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric-api": ">=${fabricVersion}",
+    "minecraft": ">=${minecraftVersionVirtual}",
+    "java": ">=22"
+  }
+}

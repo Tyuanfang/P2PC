@@ -1,0 +1,301 @@
+//! core crate 统一错误类型。
+
+use std::path::PathBuf;
+
+use thiserror::Error;
+
+/// 装箱的错误源类型，用于保留原始错误链。
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
+
+/// Stable error categories for product-level handling.
+///
+/// Detailed error enums and source chains remain available for diagnostics. Applications should
+/// use this category when selecting user-facing recovery actions instead of matching error text.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ErrorCategory {
+    /// A public Join URI is malformed or uses an unsupported protocol version.
+    InvalidJoinUri,
+    /// Endpoint or Relay configuration cannot be used.
+    InvalidEndpoint,
+    /// The Host rejected the supplied service credential.
+    AuthorizationDenied,
+    /// The remote Host or its Relay path cannot be reached.
+    HostUnreachable,
+    /// A configured local target service cannot be reached.
+    TargetUnavailable,
+    /// The requested local listener address cannot be bound.
+    LocalPortUnavailable,
+    /// A persistent Node identity cannot be loaded or stored safely.
+    IdentityUnavailable,
+    /// The requested lifecycle operation conflicts with current state.
+    OperationConflict,
+    /// A configured connection or work limit was reached.
+    ResourceLimit,
+    /// A caller supplied configuration value is invalid.
+    InvalidConfiguration,
+    /// An invariant or lower-level operation failed without a recoverable product action.
+    Internal,
+}
+
+/// 持久化层错误。
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum PersistError {
+    /// 系统数据目录不可用。
+    #[error("cannot determine system data directory")]
+    SystemDataDirUnavailable,
+    /// 路径 I/O 错误。
+    #[error("{op} `{path}` failed: {source}")]
+    PathIo {
+        op: &'static str,
+        path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+    /// 密钥文件长度非法。
+    #[error("invalid key file length: expected {expected} bytes, got {actual} bytes")]
+    InvalidKeyLength { expected: usize, actual: usize },
+    /// Host 状态文件长度非法。
+    #[error("invalid host state length: expected {expected} bytes, got {actual} bytes")]
+    InvalidHostStateLength { expected: usize, actual: usize },
+    /// Host 状态文件版本不受支持。
+    #[error("unsupported host state version: {0}")]
+    UnsupportedHostStateVersion(u8),
+    /// Host 状态中的时间戳非法。
+    #[error("invalid host state timestamp")]
+    InvalidHostStateTimestamp,
+    /// profile 解析失败。
+    #[cfg(feature = "persist")]
+    #[error("failed to parse profile `{path}`: {source}")]
+    ProfileParse {
+        path: PathBuf,
+        #[source]
+        source: toml::de::Error,
+    },
+    /// profile 序列化失败。
+    #[cfg(feature = "persist")]
+    #[error(transparent)]
+    ProfileSerialize(#[from] toml::ser::Error),
+    /// relay URL 解析失败。
+    #[error("invalid relay URL: {0}")]
+    RelayUrlParse(String),
+}
+
+/// Join URI 编解码错误。
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum JoinUriError {
+    /// URL 解析失败。
+    #[error(transparent)]
+    UrlParse(#[from] url::ParseError),
+    #[error("invalid Join URI structure")]
+    InvalidStructure,
+    #[error("unsupported Join URI version")]
+    UnsupportedVersion,
+    #[error("invalid Join URI payload")]
+    InvalidPayload,
+    #[error("Join URI payload is too long")]
+    PayloadTooLong,
+    #[error("Join URI contains unsupported flags")]
+    UnsupportedFlags,
+    /// relay URL 非法。
+    #[error("invalid relay URL: {0}")]
+    RelayUrlParse(String),
+}
+
+/// 隧道运行时错误。
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum TunnelError {
+    /// 锁中毒。
+    #[error("mutex poisoned: {name}")]
+    MutexPoisoned { name: &'static str },
+    /// 绑定 host endpoint 失败。
+    #[error("bind host endpoint failed")]
+    BindHostEndpoint(#[source] BoxError),
+    /// 绑定 join endpoint 失败。
+    #[error("bind join endpoint failed")]
+    BindJoinEndpoint(#[source] BoxError),
+    /// 绑定本地 TCP 监听失败。
+    #[error("bind local tcp listener failed")]
+    BindLocalListener(#[source] BoxError),
+    /// host accept 失败。
+    #[error("accept host connection failed")]
+    AcceptHostConnection(#[source] BoxError),
+    /// QUIC 双向流 accept 失败。
+    #[error("accept QUIC bi stream failed")]
+    AcceptQuicBiStream(#[source] BoxError),
+    /// 本地 TCP 客户端 accept 失败。
+    #[error("accept local tcp client failed")]
+    AcceptLocalTcpClient(#[source] BoxError),
+    /// 与 host 建连失败。
+    #[error("connect host endpoint failed")]
+    ConnectHostEndpoint(#[source] BoxError),
+    /// 初次连接重试耗尽。
+    #[error("initial connection failed after {attempts} attempts")]
+    InitialConnectionExhausted { attempts: u32 },
+    /// 打开认证流失败。
+    #[error("open auth stream failed")]
+    OpenAuthStream(#[source] BoxError),
+    /// 接收认证流失败。
+    #[error("accept auth stream failed")]
+    AcceptAuthStream(#[source] BoxError),
+    /// 读取认证结果失败。
+    #[error("read auth result failed")]
+    ReadAuthResult(#[source] BoxError),
+    /// 读取认证负载失败。
+    #[error("read auth payload failed")]
+    ReadAuthPayload(#[source] BoxError),
+    /// 写入认证负载失败。
+    #[error("write auth payload failed")]
+    WriteAuthPayload(#[source] BoxError),
+    /// 写入认证拒绝失败。
+    #[error("write auth rejected failed")]
+    WriteAuthRejected(#[source] BoxError),
+    /// 写入认证决策失败。
+    #[error("write auth decision failed")]
+    WriteAuthDecision(#[source] BoxError),
+    /// 结束认证流失败。
+    #[error("finish auth stream failed")]
+    FinishAuthStream(#[source] BoxError),
+    /// 认证被 host 拒绝。
+    #[error("auth rejected by host")]
+    AuthRejectedByHost,
+    /// 认证握手超时。
+    #[error("auth handshake timed out")]
+    AuthTimedOut,
+    /// 桥接 tcp->quic 失败。
+    #[error("bridge tcp->quic failed")]
+    BridgeTcpToQuic(#[source] BoxError),
+    /// 桥接 quic->tcp 失败。
+    #[error("bridge quic->tcp failed")]
+    BridgeQuicToTcp(#[source] BoxError),
+}
+
+/// sculk core 顶层错误。
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum SculkError {
+    /// 持久化错误。
+    #[error(transparent)]
+    Persist(#[from] PersistError),
+    /// Join URI 错误。
+    #[error(transparent)]
+    JoinUri(#[from] JoinUriError),
+    /// 隧道错误。
+    #[error(transparent)]
+    Tunnel(#[from] TunnelError),
+}
+
+impl TunnelError {
+    /// 构造锁中毒错误。
+    pub fn mutex_poisoned(name: &'static str) -> Self {
+        Self::MutexPoisoned { name }
+    }
+}
+
+/// core crate 统一 `Result` 别名。
+pub type Result<T> = std::result::Result<T, SculkError>;
+
+impl PersistError {
+    /// Returns the stable product-level category for this error.
+    pub const fn category(&self) -> ErrorCategory {
+        match self {
+            Self::RelayUrlParse(_) => ErrorCategory::InvalidEndpoint,
+            Self::SystemDataDirUnavailable
+            | Self::PathIo { .. }
+            | Self::InvalidKeyLength { .. }
+            | Self::InvalidHostStateLength { .. }
+            | Self::UnsupportedHostStateVersion(_)
+            | Self::InvalidHostStateTimestamp => ErrorCategory::IdentityUnavailable,
+            #[cfg(feature = "persist")]
+            Self::ProfileParse { .. } | Self::ProfileSerialize(_) => {
+                ErrorCategory::InvalidConfiguration
+            }
+        }
+    }
+}
+
+impl JoinUriError {
+    /// Returns the stable product-level category for this error.
+    pub const fn category(&self) -> ErrorCategory {
+        match self {
+            Self::RelayUrlParse(_) => ErrorCategory::InvalidEndpoint,
+            Self::UrlParse(_)
+            | Self::InvalidStructure
+            | Self::UnsupportedVersion
+            | Self::InvalidPayload
+            | Self::PayloadTooLong
+            | Self::UnsupportedFlags => ErrorCategory::InvalidJoinUri,
+        }
+    }
+}
+
+impl TunnelError {
+    /// Returns the stable product-level category for this error.
+    pub const fn category(&self) -> ErrorCategory {
+        match self {
+            Self::BindLocalListener(_) => ErrorCategory::LocalPortUnavailable,
+            Self::ConnectHostEndpoint(_)
+            | Self::InitialConnectionExhausted { .. }
+            | Self::AuthTimedOut => ErrorCategory::HostUnreachable,
+            Self::AuthRejectedByHost => ErrorCategory::AuthorizationDenied,
+            Self::BindHostEndpoint(_) | Self::BindJoinEndpoint(_) => ErrorCategory::InvalidEndpoint,
+            Self::MutexPoisoned { .. }
+            | Self::AcceptHostConnection(_)
+            | Self::AcceptQuicBiStream(_)
+            | Self::AcceptLocalTcpClient(_)
+            | Self::OpenAuthStream(_)
+            | Self::AcceptAuthStream(_)
+            | Self::ReadAuthResult(_)
+            | Self::ReadAuthPayload(_)
+            | Self::WriteAuthPayload(_)
+            | Self::WriteAuthRejected(_)
+            | Self::WriteAuthDecision(_)
+            | Self::FinishAuthStream(_)
+            | Self::BridgeTcpToQuic(_)
+            | Self::BridgeQuicToTcp(_) => ErrorCategory::Internal,
+        }
+    }
+}
+
+impl SculkError {
+    /// Returns the stable product-level category for this error.
+    pub const fn category(&self) -> ErrorCategory {
+        match self {
+            Self::Persist(error) => error.category(),
+            Self::JoinUri(error) => error.category(),
+            Self::Tunnel(error) => error.category(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_public_errors_to_stable_categories() {
+        assert_eq!(
+            JoinUriError::UnsupportedVersion.category(),
+            ErrorCategory::InvalidJoinUri
+        );
+        assert_eq!(
+            TunnelError::AuthRejectedByHost.category(),
+            ErrorCategory::AuthorizationDenied
+        );
+        assert_eq!(
+            TunnelError::AuthTimedOut.category(),
+            ErrorCategory::HostUnreachable
+        );
+        assert_eq!(
+            PersistError::InvalidKeyLength {
+                expected: 32,
+                actual: 31,
+            }
+            .category(),
+            ErrorCategory::IdentityUnavailable
+        );
+    }
+}

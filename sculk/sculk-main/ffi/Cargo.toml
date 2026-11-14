@@ -1,0 +1,27 @@
+[package]
+name = "sculk-ffi"
+description = "UniFFI glue layer exposing the sculk core to Java (Project Panama FFM)"
+edition.workspace = true
+authors.workspace = true
+license = "MIT OR Apache-2.0"
+repository.workspace = true
+rust-version.workspace = true
+version = "0.1.0"
+
+[lib]
+name = "sculk_ffi"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+sculk = { workspace = true, features = ["persist"] }
+tokio = { workspace = true }
+uniffi = { version = "0.32", features = ["tokio"] }
+rand = { workspace = true }
+# 让 tokio 的 future 能在非 tokio executor（uniffi 的 FFI 轮询线程）上运行
+async-compat = "0.2"
+
+[build-dependencies]
+uniffi = { version = "0.32", features = ["build"] }
+
+[lints]
+workspace = true

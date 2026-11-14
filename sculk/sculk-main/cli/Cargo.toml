@@ -1,0 +1,36 @@
+[package]
+name = "sculk-cli"
+categories = ["network-programming", "command-line-utilities"]
+description = "Minecraft P2P multiplayer tunnel CLI"
+documentation = "https://docs.rs/sculk-cli"
+include = [
+    "/src/**",
+    "/Cargo.toml",
+    "/README.md",
+    "/LICENSE-APACHE",
+    "/LICENSE-MIT",
+]
+keywords = ["minecraft", "p2p", "tunnel", "cli"]
+readme = "README.md"
+authors.workspace = true
+edition.workspace = true
+license = "MIT OR Apache-2.0"
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+sculk = { workspace = true, features = ["persist"] }
+anyhow.workspace = true
+arboard.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[[bin]]
+name = "sculk"
+path = "src/main.rs"
+
+[lints]
+workspace = true
