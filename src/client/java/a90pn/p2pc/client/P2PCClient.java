@@ -10,6 +10,7 @@ import a90pn.p2pc.client.ui.PearlButton;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,9 @@ public class P2PCClient implements ClientModInitializer {
 				mod.getSculkManager().close();
 			}
 		});
+
+		// 右上角网络状态队列：只在「加入别人世界」时显示（加载中 / 备用节点 / 高延迟）
+		HudRenderCallback.EVENT.register(new NetworkStatusHud());
 
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (screen instanceof TitleScreen) {
