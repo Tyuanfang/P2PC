@@ -11,10 +11,8 @@ import org.slf4j.LoggerFactory;
 public class P2PC implements ModInitializer {
 	public static final String MOD_ID = "p2pc";
 	public SculkManager sculkManager;
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static P2PC instance ;
 
 	@Override
 	public void onInitialize() {
@@ -22,6 +20,7 @@ public class P2PC implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		LOGGER.info("Initializing P2PC");
+		instance = this;
 		sculkManager = new SculkManager();
 
 	}
@@ -32,5 +31,8 @@ public class P2PC implements ModInitializer {
 
 	public SculkManager getSculkManager() {
 		return sculkManager;
+	}
+	public static P2PC getInstance() {
+		return instance;
 	}
 }
