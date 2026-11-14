@@ -31,6 +31,9 @@ public class JoinErrorScreen extends Screen {
 
     private boolean boomed;
     private boolean playedSound;
+    /** 贴图动画是否已经开始（sprite sheet 模式下只 restart 一次）。 */
+    private boolean fuseSpriteStarted;
+    private boolean blastSpriteStarted;
 
     public JoinErrorScreen(Screen parent, String errorMessage) {
         super(Component.empty());
@@ -78,9 +81,23 @@ public class JoinErrorScreen extends Screen {
                     0.0F);
         }
         if (!this.boomed) {
-            this.drawTntFalling(guiGraphics, t, cx, cy);
+            if (AnimSheet.TNT_FUSE.available()) {
+                this.drawFuseSprite(guiGraphics, t, cx, cy);
+            } else {
+                this.drawTntFalling(guiGraphics, t, cx, cy);
+            }
         } else {
-            this.drawExplosion(guiGraphics, t - DROP_MS, cx, cy);
+            long since = t - DROP_MS;
+            if (AnimSheet.TNT_BLAST.available()) {
+                // 贴图爆炸，另外叠一层全屏白闪增加冲击感
+                if (since < 120L) {
+                    int alpha = (int) (220 * (1.0F - since / 120.0F));
+                    guiGraphics.fill(0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
+                }
+                this.drawBlastSprite(guiGraphics, cx, cy);
+            } else {
+                this.drawExplosion(guiGraphics, since, cx, cy);
+            }
         }
         guiGraphics.pose().popPose();
 
@@ -101,6 +118,37 @@ public class JoinErrorScreen extends Screen {
             guiGraphics.drawCenteredString(this.font, Component.literal("检查邀请码是否过期，或让房主重新分享"),
                     this.width / 2, y + 6, 0xA0A0A0);
         }
+    }
+
+    /** 贴图版 TNT：{@link AnimSheet#TNT_FUSE} 每帧 32×32，TNT 居中占 16×16。 */
+    private void drawFuseSprite(GuiGraphics guiGraphics, long t, float cx, float cy) {
+        if (!this.fuseSpriteStarted) {
+            this.fuseSpriteStarted = true;
+            AnimSheet.TNT_FUSE.restart();
+        }
+        float progress = Math.min(1.0F, t / (float) DROP_MS);
+        float eased = progress * progress; // 加速下落
+        float topY = -40.0F;
+        float landY = cy - 24.0F;
+        float y = topY + (landY - topY) * eased;
+        // 下坠时轻微上下拉伸，和原版物品掉落的观感接近
+        float stretch = 1.0F + 0.12F * Math.min(1.0F, progress * 1.4F);
+        int height = Math.round(32 * 3.2F * stretch);
+        int width = Math.round(32 * 3.2F / stretch);
+        int centerY = Math.round(y + 24.0F);
+        AnimSheet.TNT_FUSE.draw(guiGraphics,
+                Math.round(cx) - width / 2, centerY - height / 2, width, height);
+    }
+
+    /** 贴图版爆炸：{@link AnimSheet#TNT_BLAST} 每帧 128×128，放大到约 200 像素。 */
+    private void drawBlastSprite(GuiGraphics guiGraphics, float cx, float cy) {
+        if (!this.blastSpriteStarted) {
+            this.blastSpriteStarted = true;
+            AnimSheet.TNT_BLAST.restart();
+        }
+        int size = Math.round(128 * 1.6F);
+        AnimSheet.TNT_BLAST.draw(guiGraphics,
+                Math.round(cx) - size / 2, Math.round(cy) - size / 2, size, size);
     }
 
     private void drawTntFalling(GuiGraphics guiGraphics, long t, float cx, float cy) {

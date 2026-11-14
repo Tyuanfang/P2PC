@@ -1,0 +1,36 @@
+{
+  "sheets": [
+    {
+      "file": "portal_build.png",
+      "frameWidth": 64,
+      "frameHeight": 80,
+      "frames": 16,
+      "frameMs": 70,
+      "loop": false
+    },
+    {
+      "file": "portal_swirl.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "frames": 8,
+      "frameMs": 80,
+      "loop": true
+    },
+    {
+      "file": "tnt_fuse.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 10,
+      "frameMs": 60,
+      "loop": false
+    },
+    {
+      "file": "tnt_blast.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "frames": 14,
+      "frameMs": 55,
+      "loop": false
+    }
+  ]
+}

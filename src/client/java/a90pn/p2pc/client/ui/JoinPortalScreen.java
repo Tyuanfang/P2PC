@@ -46,6 +46,9 @@ public class JoinPortalScreen extends Screen {
     private boolean failed;
     private boolean entered;
     private boolean igniteSoundPlayed;
+    /** 贴图动画是否已经开始（spritesheet 模式下只 restart 一次）。 */
+    private boolean spriteBuildStarted;
+    private boolean spriteSwirlStarted;
     private long connectedAt;
     private String statusText = "正在连接服务器…";
 
@@ -211,13 +214,19 @@ public class JoinPortalScreen extends Screen {
 
         float lastBlockAt = BLOCK_START_MS + (FRAME.length - 1) * BLOCK_STEP_MS;
         boolean ignited = elapsed >= lastBlockAt + IGNITE_MS * 0.35F;
-        this.drawPortal(guiGraphics, elapsed, block, originX, originY, ignited);
-        if (ignited && !this.igniteSoundPlayed) {
-            this.igniteSoundPlayed = true;
-            this.playLocalSound(SoundEvents.PORTAL_TRIGGER, 0.7F);
-        }
-        if (ignited) {
-            this.drawInterior(guiGraphics, elapsed, block, originX, originY);
+
+        // 有美术资源时走 sprite sheet（逐帧贴图）；资源缺失则退回下面这套程序化绘制。
+        if (AnimSheet.PORTAL_BUILD.available()) {
+            this.drawPortalSprite(guiGraphics, block, originX, originY);
+        } else {
+            this.drawPortal(guiGraphics, elapsed, block, originX, originY, ignited);
+            if (ignited) {
+                this.drawInterior(guiGraphics, elapsed, block, originX, originY);
+            }
+            if (ignited && !this.igniteSoundPlayed) {
+                this.igniteSoundPlayed = true;
+                this.playLocalSound(SoundEvents.PORTAL_TRIGGER, 0.7F);
+            }
         }
         this.drawStatus(guiGraphics, elapsed, block, originX, originY);
     }
@@ -233,8 +242,12 @@ public class JoinPortalScreen extends Screen {
                 continue;
             }
             int cell = FRAME[i];
-            float x = originX + (cell % COLS) * block;
-            float y = originY + (cell / COLS) * block;
+            // FRAME 里存的是「格子编号」（0..COLS*ROWS-1，按行优先），拆成列/行：
+            // 列 = cell % COLS，行 = cell / COLS（整数除法就是要的行号，不要改成小数）。
+            int column = cell % COLS;
+            int row = cell / COLS;
+            float x = originX + column * block;
+            float y = originY + row * block;
 
             float appear = Math.min(1.0F, t / 150.0F);
             float drop = (1.0F - easeOutBack(appear)) * block * 0.9F;
@@ -292,6 +305,53 @@ public class JoinPortalScreen extends Screen {
         }
     }
 
+    /**
+     * 贴图版传送门：先播 {@link AnimSheet#PORTAL_BUILD}（16 帧逐块搭建），
+     * 播完后门框完成、内部换成 {@link AnimSheet#PORTAL_SWIRL} 循环漩涡。
+     */
+    private void drawPortalSprite(GuiGraphics guiGraphics, float block, float originX, float originY) {
+        if (!this.spriteBuildStarted) {
+            this.spriteBuildStarted = true;
+            AnimSheet.PORTAL_BUILD.restart();
+        }
+        AnimSheet.PORTAL_BUILD.draw(guiGraphics,
+                Math.round(originX), Math.round(originY),
+                Math.round(COLS * block), Math.round(ROWS * block));
+
+        if (AnimSheet.PORTAL_BUILD.finished()) {
+            if (!this.spriteSwirlStarted) {
+                this.spriteSwirlStarted = true;
+                AnimSheet.PORTAL_SWIRL.restart();
+                this.playLocalSound(SoundEvents.PORTAL_TRIGGER, 0.7F);
+            }
+            AnimSheet.PORTAL_SWIRL.draw(guiGraphics,
+                    Math.round(originX + block), Math.round(originY + block),
+                    Math.round(2 * block), Math.round(3 * block));
+        }
+        this.drawConnectFlash(guiGraphics, block, originX, originY);
+    }
+
+    /** 连接成功瞬间的白闪 + 扩散环（贴图动画与程序化绘制两条路径共用）。 */
+    private void drawConnectFlash(GuiGraphics guiGraphics, float block, float originX, float originY) {
+        if (!this.connected) {
+            return;
+        }
+        long since = Util.getMillis() - this.connectedAt;
+        if (since >= 500L) {
+            return;
+        }
+        float ix = originX + block;
+        float iy = originY + block;
+        float iw = 2 * block;
+        float ih = 3 * block;
+        float k = since / 500.0F;
+        int alpha = (int) (170 * (1.0F - k));
+        guiGraphics.fill((int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih), (alpha << 24) | 0xFFFFFF);
+        float radius = block * (0.5F + k * 2.6F);
+        int ring = (int) (140 * (1.0F - k));
+        drawRing(guiGraphics, ix + iw / 2.0F, iy + ih / 2.0F, radius, (ring << 24) | 0xA877FF);
+    }
+
     private void drawInterior(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY) {
         float ix = originX + block;
         float iy = originY + block;
@@ -334,19 +394,8 @@ public class JoinPortalScreen extends Screen {
             guiGraphics.fill((int) px, (int) py, (int) px + 1, (int) py + 1, color);
         }
 
-        // 连接成功的白闪 + 扩散环
-        if (this.connected) {
-            long since = Util.getMillis() - this.connectedAt;
-            if (since < 500L) {
-                float k = since / 500.0F;
-                int alpha = (int) (170 * (1.0F - k));
-                guiGraphics.fill((int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih),
-                        (alpha << 24) | 0xFFFFFF);
-                float radius = block * (0.5F + k * 2.6F);
-                int ring = (int) (140 * (1.0F - k));
-                drawRing(guiGraphics, cx, cy, radius, (ring << 24) | 0xA877FF);
-            }
-        }
+        // 连接成功的白闪 + 扩散环（与贴图路径共用）
+        this.drawConnectFlash(guiGraphics, block, originX, originY);
     }
 
     private void drawStatus(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY) {
