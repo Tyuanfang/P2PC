@@ -66,6 +66,16 @@ plugins.withId("java") {
         jvmArgs("--enable-native-access=ALL-UNNAMED")
     }
 
+    // 本项目没有单元测试。Stonecraft 默认会往 test 源集里塞 junit-jupiter 和
+    // fabric-loader-junit，于是每次 build 都会为了一个空测试源集去解析 Fabric 仓库
+    // （maven.fabricmc.net）。网络抖动/被墙时这个仓库会被 Gradle 标记为
+    // "Repository Fabric is disabled due to earlier error"，整个 test 配置跟着失败。
+    // 既然没有测试，就把这些依赖清空，test 任务会保持 NO-SOURCE。
+    configurations.matching { it.name.startsWith("test") }.configureEach {
+        withDependencies { clear() }
+    }
+    tasks.withType<Test>().configureEach { enabled = false }
+
     // sculk 原生库的平台标识与文件名（与 SculkClient.platformToken() 对应）
     val nativePlatforms =
         mapOf(
