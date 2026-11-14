@@ -42,6 +42,8 @@ P2PC 是一个 Fabric 模组，目标是让 Minecraft 联机摆脱对公网服�
 3. DeepSeek：协助编写了你能看见的99%中文（Release，Package，Actions，Commit，注释，Wiki）
 ## 当前状态
 
+> 最新发布：**v0.0.8 · 原型机**（见 [Releases](https://github.com/Tyuanfang/P2PC/releases)）——端到端联机链路已跑通，能玩，界面还在打磨。
+
 端到端联机链路已经跑通，处在「功能可用、界面打磨中」的阶段：
 
 - **Rust 核心 → UniFFI → Java**：`sculk-ffi` crate 暴露 sculk 的全量公开 API（隧道服务、多服务节点、密钥/令牌/邀请码、持久化、LAN 扫描与广播），`uniffi-bindgen-java` 生成 Panama FFM 绑定，模组侧统一门面为 `a90pn.p2pc.SculkClient`。

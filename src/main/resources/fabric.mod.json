@@ -3,13 +3,15 @@
 	"id": "p2pc",
 	"version": "${version}",
 	"name": "P2PC",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "基于 P2P 打洞的 Minecraft 联机模组：房主一键开房生成邀请码，好友输入邀请码即可直连进入世界，无需公网 IP 与内网穿透。",
 	"authors": [
-		"Me!"
+		"A90PN",
+		"ZhgnNo"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/Tyuanfang/P2PC",
+		"sources": "https://github.com/Tyuanfang/P2PC",
+		"issues": "https://github.com/Tyuanfang/P2PC/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/p2pc/icon.png",
