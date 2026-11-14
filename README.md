@@ -36,7 +36,10 @@ P2PC 是一个 Fabric 模组，目标是让 Minecraft 联机摆脱对公网服�
 | 绑定层 | UniFFI（生成 Java 绑定） |
 | 构建 | Gradle（Java 侧）+ Cargo（Rust 侧） |
 
-
+##开发者
+1. A90PN：构思，主要代码编写者
+2. ZhgnNo：提供部分ui
+3. DeepSeek：协助编写了你能看见的99%中文（Release，Package，Actions，Commit，注释，Wiki）
 ## 当前状态
 
 项目处于早期开发阶段。当前重点是打通「Rust 核心 → UniFFI 绑定 → Java 模组调用」的链路，并验证 P2P 联机在真实网络环境下的可用性。后续计划包括房主审批 UI 完善、中继服务器可配置、多平台 native 库分发等。
