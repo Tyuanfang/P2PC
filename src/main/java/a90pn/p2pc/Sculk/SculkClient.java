@@ -13,6 +13,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import a90pn.p2pc.ffi.AccessToken;
 import a90pn.p2pc.ffi.HostConfig;
 import a90pn.p2pc.ffi.HostOptions;
 import a90pn.p2pc.ffi.HostProfile;
@@ -33,6 +34,8 @@ import a90pn.p2pc.ffi.ScuLkException;
 import a90pn.p2pc.ffi.SculkFfi;
 import a90pn.p2pc.ffi.SculkNode;
 import a90pn.p2pc.ffi.SculkNodeStatus;
+import a90pn.p2pc.ffi.SecretKey;
+import a90pn.p2pc.ffi.ServiceId;
 import a90pn.p2pc.ffi.Subscription;
 import a90pn.p2pc.ffi.TokenRefreshKind;
 import a90pn.p2pc.ffi.TokenRefreshPolicy;
@@ -173,40 +176,60 @@ public final class SculkClient {
 
     // ------------------------------------------------------------------ 密钥 / 标识 / 令牌
 
+    /*
+     * 这里的 SecretKey / ServiceId / AccessToken 都是 UniFFI 生成的「原生对象」：
+     * 每个实例在 Rust 侧持有一个句柄，必须 close() 才会立刻释放（不 close 只能等 GC）。
+     * 我们只要里面的字节/字符串，所以统一用 try-with-resources 用完即关。
+     */
+
     /** 生成新的 32 字节节点密钥。 */
     public static byte[] generateSecretKey() {
         ensureLoaded();
-        return toByteArray(SculkFfi.secretKeyGenerate().toBytes());
+        try (SecretKey key = SculkFfi.secretKeyGenerate()) {
+            return toByteArray(key.toBytes());
+        }
     }
 
     /** 由 32 字节节点密钥导出 EndpointId 字符串。 */
     public static String secretKeyPublicKey(byte[] secretKey) throws ScuLkException {
         ensureLoaded();
-        return SculkFfi.secretKeyFromBytes(requiredBytes(secretKey, 32, "secretKey")).publicKey();
+        try (SecretKey key = SculkFfi.secretKeyFromBytes(requiredBytes(secretKey, 32, "secretKey"))) {
+            return key.publicKey();
+        }
     }
 
     /** 生成新的 16 字节服务标识。 */
     public static byte[] generateServiceId() {
         ensureLoaded();
-        return toByteArray(SculkFfi.serviceIdGenerate().toBytes());
+        try (ServiceId serviceId = SculkFfi.serviceIdGenerate()) {
+            return toByteArray(serviceId.toBytes());
+        }
     }
 
     /** 生成新的 32 字节访问令牌。 */
     public static byte[] generateAccessToken() {
         ensureLoaded();
-        return toByteArray(SculkFfi.accessTokenGenerate().toBytes());
+        try (AccessToken token = SculkFfi.accessTokenGenerate()) {
+            return toByteArray(token.toBytes());
+        }
     }
 
     /** 以常量时间比较两个 32 字节访问令牌。 */
     public static boolean accessTokenMatches(byte[] token, byte[] other) throws ScuLkException {
         ensureLoaded();
-        return SculkFfi.accessTokenFromBytes(requiredBytes(token, 32, "token"))
-                .matches(requiredBytes(other, 32, "other"));
+        try (AccessToken left = SculkFfi.accessTokenFromBytes(requiredBytes(token, 32, "token"));
+             AccessToken right = SculkFfi.accessTokenFromBytes(requiredBytes(other, 32, "other"))) {
+            return left.matches(toByteList(other));
+        }
     }
 
     // ------------------------------------------------------------------ 分享 URI
 
-    /** 解析 {@code sculk://join/v1/...} 分享串。 */
+    /**
+     * 解析 {@code sculk://join/v1/...} 分享串。
+     *
+     * <p><b>调用方负责关闭</b>：返回值是原生对象，用完请 {@code try (JoinUri uri = ...)}。
+     */
     public static JoinUri parseJoinUri(String uri) throws ScuLkException {
         ensureLoaded();
         return SculkFfi.joinUriParse(uri);
@@ -268,7 +291,12 @@ public final class SculkClient {
         return new JoinOptions(joinUri, (short) localPort, config);
     }
 
-    /** 新建一个隧道服务实例（进程内一个就够）。 */
+    /**
+     * 新建一个隧道服务实例（进程内一个就够）。
+     *
+     * <p><b>调用方负责关闭</b>：用完（或停止后）请 {@code service.close()}，否则 Rust 侧
+     * 的实例要等 GC 才释放。
+     */
     public static TunnelService newService() {
         ensureLoaded();
         return new TunnelService();
@@ -512,7 +540,7 @@ public final class SculkClient {
         return node.endpointId();
     }
 
-    /** 为指定服务轮换令牌并返回新的分享 URI。 */
+    /** 为指定服务轮换令牌并返回新的分享 URI（返回的 JoinUri 调用方负责 close()）。 */
     public static CompletableFuture<JoinUri> rotateServiceToken(SculkNode node, byte[] serviceId) {
         ensureLoaded();
         return node.rotateToken(requiredBytes(serviceId, 16, "serviceId"));
@@ -526,7 +554,10 @@ public final class SculkClient {
 
     /** 服务句柄：当前分享 URI（含令牌）。 */
     public static String handleSecretUri(HostedServiceHandle handle) throws ScuLkException {
-        return await(handle.joinUri()).exposeSecretUri();
+        // joinUri() 返回原生对象，取完字符串就关掉。
+        try (JoinUri uri = await(handle.joinUri())) {
+            return uri.exposeSecretUri();
+        }
     }
 
     /** 服务句柄：当前令牌状态。 */
@@ -539,7 +570,7 @@ public final class SculkClient {
         return await(handle.status());
     }
 
-    /** 服务句柄：立即轮换令牌并返回新的分享 URI。 */
+    /** 服务句柄：立即轮换令牌并返回新的分享 URI（返回的 JoinUri 调用方负责 close()）。 */
     public static JoinUri handleRotateToken(HostedServiceHandle handle) throws ScuLkException {
         return await(handle.rotateToken());
     }
@@ -577,13 +608,17 @@ public final class SculkClient {
     /** 加载稳定节点密钥；不存在时生成并写入。 */
     public static byte[] loadOrGenerateKey(String path) throws ScuLkException {
         ensureLoaded();
-        return toByteArray(SculkFfi.persistLoadOrGenerateKey(path).toBytes());
+        try (SecretKey key = SculkFfi.persistLoadOrGenerateKey(path)) {
+            return toByteArray(key.toBytes());
+        }
     }
 
     /** 生成并写入新的节点密钥（覆盖已有文件）。 */
     public static byte[] generateNewKey(String path) throws ScuLkException {
         ensureLoaded();
-        return toByteArray(SculkFfi.persistGenerateNewKey(path).toBytes());
+        try (SecretKey key = SculkFfi.persistGenerateNewKey(path)) {
+            return toByteArray(key.toBytes());
+        }
     }
 
     /** 加载 host 状态；文件不存在时返回 null。 */
@@ -644,13 +679,13 @@ public final class SculkClient {
 
     // ------------------------------------------------------------------ LAN
 
-    /** 开始监听 Minecraft LAN 公告（224.0.2.60:4445），发现可连接的本机服务后结束。 */
+    /** 开始监听 Minecraft LAN 公告（224.0.2.60:4445），发现可连接的本机服务后结束。调用方负责 close()。 */
     public static LanScanner lanScannerStart() throws ScuLkException {
         ensureLoaded();
         return SculkFfi.lanScannerStart();
     }
 
-    /** 向本机 Minecraft 客户端周期性发布 LAN 公告（在 multiplayer 列表里出现）。 */
+    /** 向本机 Minecraft 客户端周期性发布 LAN 公告（在 multiplayer 列表里出现）。调用方负责 close()。 */
     public static LanBroadcaster lanBroadcasterStart(String name, int port) throws ScuLkException {
         ensureLoaded();
         return SculkFfi.lanBroadcasterStart(name, (short) port);

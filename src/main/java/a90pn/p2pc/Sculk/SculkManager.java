@@ -6,6 +6,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * sculk 隧道的唯一管理器（进程内一个，挂在 {@link a90pn.p2pc.P2PC} 上）。
+ *
+ * <p>状态机：{@code AVAILABLE}（刚启动 / 刚复位）→ {@code JOIN} 或 {@code HOST}（隧道运行中）
+ * → {@code close()} 回到 {@code IDLE}；{@code ERROR} 是「出过错、需要先 close() 复位」的中间态。
+ *
+ * <p>生命周期约定：
+ * <ul>
+ *   <li>{@link #watch(ClientEvent)} 由 join/host 内部启动，事件在守护线程上回调，
+ *       UI 侧记得用 {@code Minecraft.execute} 切回客户端线程；</li>
+ *   <li>{@link #close()} 幂等且同步：关订阅 → 停隧道 → 关服务对象 → 清空状态；</li>
+ *   <li>连接被拒、断线、退出世界都会走到 close()，别假设「隧道一直活着」。</li>
+ * </ul>
+ */
 public class SculkManager {
 
     Logger logger = LoggerFactory.getLogger("SculkManager");
@@ -62,7 +76,13 @@ public class SculkManager {
         }
         status = SculkStatues.JOIN;
         this.joinOptions = joinOptions;
-        tunnelService.startJoin(joinOptions);
+        // startJoin 失败（邀请码过期、端点不可用……）时不会有事件回来，
+        // 这里主动收尾并回报错误，免得界面只能干等 45 秒超时。
+        tunnelService.startJoin(joinOptions).whenComplete((ignored, error) -> {
+            if (error != null) {
+                reportStartFailure(event, "加入失败", error);
+            }
+        });
         watch(event);
     }
     public void host(HostOptions hostOptions,ClientEvent event) {
@@ -81,8 +101,37 @@ public class SculkManager {
             tunnelService = SculkClient.newService();
         }
         status = SculkStatues.HOST;
-        tunnelService.startHost(hostOptions);
+        // 同 join：启动失败要自己收尾，别让界面停在「正在创建隧道…」。
+        tunnelService.startHost(hostOptions).whenComplete((ignored, error) -> {
+            if (error != null) {
+                reportStartFailure(event, "创建房间失败", error);
+            }
+        });
         watch(event);
+    }
+
+    /**
+     * startJoin / startHost 的 future 失败时收尾：复位状态、通知界面、清理隧道。
+     *
+     * <p>清理放到守护线程里做——{@code close()} 会 {@code stop().get(2s)}，
+     * 而这里已经在 FFI 的执行线程上，直接调用可能把线程卡住两秒。
+     */
+    private void reportStartFailure(ClientEvent event, String message, Throwable error) {
+        Throwable cause = error instanceof java.util.concurrent.CompletionException && error.getCause() != null
+                ? error.getCause()
+                : error;
+        logger.error("{}：{}", message, cause.toString());
+
+        this.status = SculkStatues.AVAILABLE;
+        try {
+            event.clientEvent(this.status, MassageKind.ERROR, message, cause.getMessage());
+        } catch (RuntimeException ignored) {
+            // 回调自己出错不影响清理
+        }
+
+        Thread cleanup = new Thread(this::close, "p2pc-tunnel-cleanup");
+        cleanup.setDaemon(true);
+        cleanup.start();
     }
     public synchronized void close(){
         if(isClosing) {
@@ -97,12 +146,20 @@ public class SculkManager {
             isWatching = false;
 
             if (tunnelService != null) {
+                // 先停隧道（最多等 2 秒），再关掉服务对象本身；
+                // TunnelService 是 UniFFI 生成的原生对象，不 close() 就要等 GC 才释放句柄。
+                TunnelService service = tunnelService;
+                tunnelService = null;
                 try {
-                    SculkClient.stop(tunnelService).get(2, TimeUnit.SECONDS);
+                    SculkClient.stop(service).get(2, TimeUnit.SECONDS);
                 } catch (Exception e) {
                     logger.warn("[p2pc] 停止隧道超时或异常", e);
                 }
-                tunnelService = null;
+                try {
+                    service.close();
+                } catch (RuntimeException ignored) {
+                    // 已经在 Rust 侧销毁/重复关闭，忽略
+                }
             }
 
             tunnelStatus = null;
