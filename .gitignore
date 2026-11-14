@@ -45,3 +45,6 @@ sculk/sculk-main/*.log
 gradle-build.log
 smoke/classes/
 smoke/sources.txt
+
+# 动画素材自检生成的预览图
+tools/anim/preview/
