@@ -1,13 +1,14 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.compat.BaseScreen;
 import a90pn.p2pc.compat.Cycles;
+import a90pn.p2pc.compat.Gfx;
 
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.SculkClient;
 import a90pn.p2pc.Sculk.SculkStatues;
 import a90pn.p2pc.client.HostSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.GameType;
  * <p>原版的三项（游戏模式、允许作弊、端口）都在，另外加上 P2PC 自己的：
  * 允许离线玩家、PvP、服务器描述（MOTD）。创建后把隧道挂到同一个端口上，</p>
  */
-public class HostUI extends Screen {
+public class HostUI extends BaseScreen {
     private static final int COLUMN = 150;
     private static final int GAP = 8;
     private static final int MIN_PORT = 1024;
@@ -75,7 +76,7 @@ public class HostUI extends Screen {
         this.portBox = new EditBox(this.font, this.leftX, this.top + 42, COLUMN, 20, Component.literal("端口"));
         this.portBox.setMaxLength(5);
         this.portBox.setValue(Integer.toString(HostSettings.lastPort()));
-        this.portBox.setFilter(value -> value.isEmpty() || value.matches("\\d{0,5}"));
+        a90pn.p2pc.compat.Fields.digitsOnly(this.portBox, 5);
         this.addRenderableWidget(this.portBox);
 
         this.motdBox = new EditBox(this.font, this.rightX, this.top + 42, COLUMN, 20,
@@ -132,7 +133,7 @@ public class HostUI extends Screen {
             return;
         }
         if (current == SculkStatues.HOST) {
-            minecraft.setScreen(HostScreen.reopen(this.parent));
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, HostScreen.reopen(this.parent));
             return;
         }
 
@@ -161,7 +162,7 @@ public class HostUI extends Screen {
 
         int actualPort = port;
         if (!server.isPublished()) {
-            boolean published = server.publishServer(this.gameMode, this.allowCheats, port);
+            boolean published = a90pn.p2pc.compat.Ports.publishServer(server, this.gameMode, this.allowCheats, port);
             if (!published) {
                 showError("端口 " + port + " 开放失败，可能被占用");
                 return;
@@ -197,29 +198,28 @@ public class HostUI extends Screen {
                 SculkClient.hostOptions(actualPort, null, null, null, null, SculkClient.hostConfig(100L, null)),
                 (status, kind, message, reason) -> HostScreen.pushEvent(kind, message, reason));
 
-        minecraft.setScreen(new HostScreen(this.parent, actualPort, previousOnlineMode));
+        a90pn.p2pc.compat.ScreenSwap.to(minecraft, new HostScreen(this.parent, actualPort, previousOnlineMode));
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         int titleY = Math.max(6, this.top - 28);
-        guiGraphics.drawCenteredString(this.font, Component.literal("创建房间"), this.width / 2, titleY, 0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("创建房间"), this.width / 2, titleY,
+                0xFFFFFF);
 
         // 原版「对局域网开放」的排版：标签在上、控件在下，两列对称。
         int label = 0xA0A0A0;
-        guiGraphics.drawString(this.font, "游戏模式", this.leftX, this.top - 11, label);
-        guiGraphics.drawString(this.font, "允许作弊", this.rightX, this.top - 11, label);
-        guiGraphics.drawString(this.font, "端口", this.leftX, this.top + 31, label);
-        guiGraphics.drawString(this.font, "服务器描述", this.rightX, this.top + 31, label);
-        guiGraphics.drawString(this.font, "对其他玩家的设置", this.leftX, this.top + 78, 0xFFFFFF);
-        guiGraphics.drawString(this.font, "允许离线玩家", this.leftX, this.top + 89, label);
-        guiGraphics.drawString(this.font, "启用 PvP", this.rightX, this.top + 89, label);
+        Gfx.text(guiGraphics, this.font, "游戏模式", this.leftX, this.top - 11, label);
+        Gfx.text(guiGraphics, this.font, "允许作弊", this.rightX, this.top - 11, label);
+        Gfx.text(guiGraphics, this.font, "端口", this.leftX, this.top + 31, label);
+        Gfx.text(guiGraphics, this.font, "服务器描述", this.rightX, this.top + 31, label);
+        Gfx.text(guiGraphics, this.font, "对其他玩家的设置", this.leftX, this.top + 78, 0xFFFFFF);
+        Gfx.text(guiGraphics, this.font, "允许离线玩家", this.leftX, this.top + 89, label);
+        Gfx.text(guiGraphics, this.font, "启用 PvP", this.rightX, this.top + 89, label);
 
         boolean isError = System.currentTimeMillis() < this.errorUntil;
         String hint = isError ? this.errorText : "创建后这里会生成邀请码，朋友用它加入";
-        guiGraphics.drawCenteredString(this.font, Component.literal(hint),
+        Gfx.centeredText(guiGraphics, this.font, Component.literal(hint),
                 this.width / 2, this.top + 192, isError ? 0xFF5555 : 0x808080);
     }
 
@@ -227,7 +227,7 @@ public class HostUI extends Screen {
     public void onClose() {
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 }

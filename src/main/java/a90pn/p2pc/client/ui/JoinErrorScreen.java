@@ -3,7 +3,8 @@ package a90pn.p2pc.client.ui;
 import a90pn.p2pc.compat.Render;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import a90pn.p2pc.compat.BaseScreen;
+import a90pn.p2pc.compat.Gfx;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -18,7 +19,7 @@ import net.minecraft.world.item.Items;
 import java.util.List;
 
 
-public class JoinErrorScreen extends Screen {
+public class JoinErrorScreen extends BaseScreen {
 
     private static final long DROP_MS = 750L;
 
@@ -67,8 +68,7 @@ public class JoinErrorScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         long t = Time.millis() - this.openedAt;
         float cx = this.width / 2.0F;
         float cy = this.height / 2.0F - 10.0F;
@@ -93,7 +93,7 @@ public class JoinErrorScreen extends Screen {
                 // 贴图爆炸，另外叠一层全屏白闪增加冲击感
                 if (since < 120L) {
                     int alpha = (int) (220 * (1.0F - since / 120.0F));
-                    guiGraphics.fill(0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
+                    Gfx.fill(guiGraphics, 0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
                 }
                 this.drawBlastSprite(guiGraphics, cx, cy);
             } else {
@@ -104,25 +104,25 @@ public class JoinErrorScreen extends Screen {
 
         long textAt = DROP_MS + (long) (BLAST_MS * 0.5);
         if (t >= textAt) {
-            guiGraphics.drawCenteredString(this.font, Component.literal("连接失败"), this.width / 2, 20, 0xFF5555);
+            Gfx.centeredText(guiGraphics, this.font, Component.literal("连接失败"), this.width / 2, 20, 0xFF5555);
             List<FormattedCharSequence> lines = this.font.split(Component.literal(this.errorMessage), 320);
             int y = (int) cy + 34;
             int maxLines = Math.min(lines.size(), 6);
             for (int i = 0; i < maxLines; i++) {
-                guiGraphics.drawCenteredString(this.font, lines.get(i), this.width / 2, y, 0xFFFFFF);
+                Gfx.centeredText(guiGraphics, this.font, lines.get(i), this.width / 2, y, 0xFFFFFF);
                 y += 12;
             }
             if (lines.size() > maxLines) {
-                guiGraphics.drawCenteredString(this.font, Component.literal("…"), this.width / 2, y, 0xA0A0A0);
+                Gfx.centeredText(guiGraphics, this.font, Component.literal("…"), this.width / 2, y, 0xA0A0A0);
                 y += 12;
             }
-            guiGraphics.drawCenteredString(this.font, Component.literal("检查邀请码是否过期，或让房主重新分享"),
+            Gfx.centeredText(guiGraphics, this.font, Component.literal("检查邀请码是否过期，或让房主重新分享"),
                     this.width / 2, y + 6, 0xA0A0A0);
         }
     }
 
     /** 贴图版 TNT：{@link AnimSheet#TNT_FUSE} 每帧 32×32，TNT 居中占 16×16。 */
-    private void drawFuseSprite(GuiGraphics guiGraphics, long t, float cx, float cy) {
+    private void drawFuseSprite(Object guiGraphics, long t, float cx, float cy) {
         if (!this.fuseSpriteStarted) {
             this.fuseSpriteStarted = true;
             AnimSheet.TNT_FUSE.restart();
@@ -142,7 +142,7 @@ public class JoinErrorScreen extends Screen {
     }
 
     /** 贴图版爆炸：{@link AnimSheet#TNT_BLAST} 每帧 128×128，放大到约 200 像素。 */
-    private void drawBlastSprite(GuiGraphics guiGraphics, float cx, float cy) {
+    private void drawBlastSprite(Object guiGraphics, float cx, float cy) {
         if (!this.blastSpriteStarted) {
             this.blastSpriteStarted = true;
             AnimSheet.TNT_BLAST.restart();
@@ -152,7 +152,7 @@ public class JoinErrorScreen extends Screen {
                 Math.round(cx) - size / 2, Math.round(cy) - size / 2, size, size);
     }
 
-    private void drawTntFalling(GuiGraphics guiGraphics, long t, float cx, float cy) {
+    private void drawTntFalling(Object guiGraphics, long t, float cx, float cy) {
         float progress = Math.min(1.0F, t / (float) DROP_MS);
         float eased = progress * progress; // 加速下落
         float topY = -40.0F;
@@ -164,7 +164,7 @@ public class JoinErrorScreen extends Screen {
         Render.translate(guiGraphics, cx, y + 24.0F);
         Render.scale(guiGraphics, scale / stretch, scale * stretch);
         Render.translate(guiGraphics, -8.0F, -8.0F);
-        guiGraphics.renderItem(TNT, 0, 0);
+        Gfx.item(guiGraphics, TNT, 0, 0);
         Render.pop(guiGraphics);
 
         long sparkSeed = t / 60L;
@@ -173,17 +173,17 @@ public class JoinErrorScreen extends Screen {
             float radius = 6.0F + (i % 3) * 5.0F;
             int px = (int) (cx + Mth.cos(angle) * radius);
             int py = (int) (y + 2 + Mth.sin(angle) * radius * 0.4F);
-            guiGraphics.fill(px, py, px + 1, py + 1, 0xFFFFC861);
+            Gfx.fill(guiGraphics, px, py, px + 1, py + 1, 0xFFFFC861);
         }
     }
 
-    private void drawExplosion(GuiGraphics guiGraphics, long since, float cx, float cy) {
+    private void drawExplosion(Object guiGraphics, long since, float cx, float cy) {
         float k = Math.min(1.0F, since / (float) BLAST_MS);
 
         // 白闪
         if (since < 120L) {
             int alpha = (int) (220 * (1.0F - since / 120.0F));
-            guiGraphics.fill(0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
+            Gfx.fill(guiGraphics, 0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
         }
 
         // 冲击环
@@ -200,7 +200,7 @@ public class JoinErrorScreen extends Screen {
                 double angle = i * Math.PI * 2 / points;
                 int px = (int) (cx + Math.cos(angle) * radius);
                 int py = (int) (cy + Math.sin(angle) * radius);
-                guiGraphics.fill(px, py, px + 2, py + 2, color);
+                Gfx.fill(guiGraphics, px, py, px + 2, py + 2, color);
             }
         }
 
@@ -228,7 +228,7 @@ public class JoinErrorScreen extends Screen {
             int alpha = (int) (255 * (1.0F - life));
             int pxI = (int) px;
             int pyI = (int) py;
-            guiGraphics.fill(pxI, pyI, pxI + 2, pyI + 2, (alpha << 24) | ((i % 2 == 0) ? 0xFFC861 : 0xFFFFFF));
+            Gfx.fill(guiGraphics, pxI, pyI, pxI + 2, pyI + 2, (alpha << 24) | ((i % 2 == 0) ? 0xFFC861 : 0xFFFFFF));
         }
 
         // 烟柱
@@ -246,17 +246,17 @@ public class JoinErrorScreen extends Screen {
         // 橙色余烬
         float ember = 0.5F + 0.5F * (float) Math.sin(since * 0.02);
         int emberAlpha = (int) (120 * ember * (1.0F - k * 0.6F));
-        guiGraphics.fill((int) cx - 3, (int) cy - 3, (int) cx + 3, (int) cy + 3, (emberAlpha << 24) | 0xFFC861);
+        Gfx.fill(guiGraphics, (int) cx - 3, (int) cy - 3, (int) cx + 3, (int) cy + 3, (emberAlpha << 24) | 0xFFC861);
     }
 
-    private void drawEllipse(GuiGraphics guiGraphics, float cx, float cy, float radiusX, float radiusY, int color) {
+    private void drawEllipse(Object guiGraphics, float cx, float cy, float radiusX, float radiusY, int color) {
         int rows = (int) Math.max(1.0F, radiusY * 2.0F);
         for (int row = 0; row < rows; row++) {
             float dy = -radiusY + row;
             float ratio = dy / radiusY;
             float half = radiusX * (float) Math.sqrt(Math.max(0.0F, 1.0F - ratio * ratio));
             int y = (int) (cy + dy);
-            guiGraphics.fill((int) (cx - half), y, (int) (cx + half), y + 1, color);
+            Gfx.fill(guiGraphics, (int) (cx - half), y, (int) (cx + half), y + 1, color);
         }
     }
 
@@ -264,7 +264,7 @@ public class JoinErrorScreen extends Screen {
     public void onClose() {
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 }

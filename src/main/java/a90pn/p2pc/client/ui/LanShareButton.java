@@ -11,19 +11,41 @@ public class LanShareButton extends Button {
         super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
     }
 
-    // 1.21.11 起 AbstractButton.renderWidget 是 final 的，子类只能实现 renderContents：
-    // 这里手动画原版按钮底图 + 居中文字，保持和其它原版按钮一致。
+    // 1.21.11 起 AbstractButton.renderWidget 是 final 的，子类只能实现 renderContents
+    //（26.3 又改名成 extractContents）：这里手动画原版按钮底图 + 居中文字，保持和其它原版按钮一致。
     //? if >=1.21.11 {
-    /*@Override
-    protected void renderContents(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY,
+    /*//? if <26.3 {
+    @Override
+    protected void renderContents(
+            net.minecraft.client.gui.GuiGraphics guiGraphics,
+            int mouseX,
+            int mouseY,
             float partialTick) {
         this.renderDefaultSprite(guiGraphics);
-        guiGraphics.drawCenteredString(
+        a90pn.p2pc.compat.Gfx.centeredText(
+                guiGraphics,
                 net.minecraft.client.Minecraft.getInstance().font,
                 this.getMessage(),
                 this.getX() + this.getWidth() / 2,
                 this.getY() + (this.getHeight() - 8) / 2,
                 0xFFFFFF);
     }
+    //?} else {
+    /^@Override
+    protected void extractContents(
+            net.minecraft.client.gui.GuiGraphicsExtractor guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick) {
+        this.extractDefaultSprite(guiGraphics);
+        a90pn.p2pc.compat.Gfx.centeredText(
+                guiGraphics,
+                net.minecraft.client.Minecraft.getInstance().font,
+                this.getMessage(),
+                this.getX() + this.getWidth() / 2,
+                this.getY() + (this.getHeight() - 8) / 2,
+                0xFFFFFF);
+    }
+    ^///?}
     *///?}
 }

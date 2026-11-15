@@ -49,15 +49,17 @@ publishMods {
 
 plugins.withId("java") {
     // Stonecraft 按 MC 版本给的是 Java 21（1.21.1），但生成的 UniFFI 绑定用的是
-    // Project Panama FFM，Java 22 才在正式版里可用，所以这里统一抬到 22。
+    // Project Panama FFM，Java 22 才在正式版里可用，所以 1.21.x 统一抬到 22；
+    // 26.x 的原版和加载器构件本身就是按 Java 25 编译的，只能跟着用 25。
+    val p2pcJavaTarget = if (stonecutter.current.version.startsWith("26.")) 25 else 22
     afterEvaluate {
         extensions.configure<JavaPluginExtension> {
-            sourceCompatibility = JavaVersion.VERSION_22
-            targetCompatibility = JavaVersion.VERSION_22
+            sourceCompatibility = JavaVersion.toVersion(p2pcJavaTarget)
+            targetCompatibility = JavaVersion.toVersion(p2pcJavaTarget)
             toolchain.languageVersion.set(JavaLanguageVersion.of(25))
         }
         tasks.withType<JavaCompile>().configureEach {
-            options.release.set(22)
+            options.release.set(p2pcJavaTarget)
         }
     }
 

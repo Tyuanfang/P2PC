@@ -3,11 +3,12 @@ package a90pn.p2pc.client.ui;
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.MassageKind;
 import a90pn.p2pc.Sculk.SculkClient;
+import a90pn.p2pc.compat.BaseScreen;
+import a90pn.p2pc.compat.Gfx;
 import a90pn.p2pc.ffi.ConnectionSnapshot;
 import a90pn.p2pc.ffi.TunnelStatus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,7 +19,7 @@ import net.minecraft.network.chat.Component;
 /**
  * 房间运行页：显示邀请码、在线人数，停止后恢复原来的正版验证设置。
  */
-public class HostScreen extends Screen {
+public class HostScreen extends BaseScreen {
     private static final int WIDGET_WIDTH = 220;
 
     private static volatile HostScreen active;
@@ -136,7 +137,7 @@ public class HostScreen extends Screen {
                 // 恢复开放前的正版验证设置。
                 server.setUsesAuthentication(this.previousOnlineMode);
             }
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 
@@ -165,19 +166,18 @@ public class HostScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         int titleY = Math.max(8, this.top - 30);
-        guiGraphics.drawCenteredString(this.font, Component.literal("房间已开启"), this.width / 2, titleY, 0xFFFFFF);
-        guiGraphics.drawCenteredString(this.font,
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("房间已开启"), this.width / 2, titleY,
+                0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("端口 " + this.port), this.width / 2, this.top - 14, 0x9C9C9C);
-        guiGraphics.drawCenteredString(this.font, this.statusText,
+        Gfx.centeredText(guiGraphics, this.font, this.statusText,
                 this.width / 2, this.top + 48, this.statusColor);
-        guiGraphics.drawCenteredString(this.font,
+        Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("当前在线：" + this.players),
                 this.width / 2, this.top + 60, 0x9C9C9C);
-        guiGraphics.drawCenteredString(this.font,
+        Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("复制邀请码发给朋友，对方在标题界面点末影珍珠按钮加入"),
                 this.width / 2, this.top + 132, 0x707070);
     }
@@ -187,7 +187,7 @@ public class HostScreen extends Screen {
         active = null;
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 }

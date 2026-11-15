@@ -1,20 +1,23 @@
 package a90pn.p2pc.client.ui;
 
 import a90pn.p2pc.Sculk.SculkClient;
+import a90pn.p2pc.compat.BaseScreen;
+import a90pn.p2pc.compat.Gfx;
+import a90pn.p2pc.compat.Time;
 import a90pn.p2pc.ffi.JoinUri;
 import a90pn.p2pc.ffi.ScuLkException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import a90pn.p2pc.compat.Time;
 
-
-public class JoinUI extends Screen {
+/**
+ * 标题界面里的「加入世界」页：粘贴邀请码 → 本地校验 → 进传送门过场页。
+ */
+public class JoinUI extends BaseScreen {
     private static final int WIDGET_WIDTH = 220;
 
     private final Screen parent;
@@ -48,28 +51,21 @@ public class JoinUI extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         long now = Time.millis();
-        guiGraphics.drawCenteredString(this.font, Component.literal("加入世界"), this.width / 2, 36, 0xFFFFFF);
-        guiGraphics.drawCenteredString(this.font, Component.literal("粘贴好友分享的邀请码"),
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("加入世界"), this.width / 2, 36, 0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("粘贴好友分享的邀请码"),
                 this.width / 2, this.height / 2 - 34, 0xA0A0A0);
         if (this.errorText != null) {
             if (now < this.errorUntil) {
-                guiGraphics.drawCenteredString(this.font, Component.literal(this.errorText),
+                Gfx.centeredText(guiGraphics, this.font, Component.literal(this.errorText),
                         this.width / 2, this.height / 2 + 84, 0xFF5555);
             } else {
                 this.errorText = null;
             }
         }
-        guiGraphics.drawCenteredString(this.font, Component.literal("只连接你信任的人分享的邀请码"),
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("只连接你信任的人分享的邀请码"),
                 this.width / 2, this.height - 30, 0x808080);
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
     }
 
     //? if <1.21.11 {
@@ -108,7 +104,7 @@ public class JoinUI extends Screen {
         }
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(new JoinPortalScreen(code, this.parent));
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, new JoinPortalScreen(code, this.parent));
         }
     }
 
@@ -121,7 +117,7 @@ public class JoinUI extends Screen {
     public void onClose() {
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 }

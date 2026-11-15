@@ -8,7 +8,8 @@ import a90pn.p2pc.ffi.JoinConfig;
 import a90pn.p2pc.ffi.JoinOptions;
 import a90pn.p2pc.compat.Render;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import a90pn.p2pc.compat.BaseScreen;
+import a90pn.p2pc.compat.Gfx;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 
-public class JoinPortalScreen extends Screen {
+public class JoinPortalScreen extends BaseScreen {
     public static final int LOCAL_PORT = 25565;
 
     private static final int COLS = 4;
@@ -99,7 +100,7 @@ public class JoinPortalScreen extends Screen {
         this.failed = true;
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(new JoinErrorScreen(this.parent, message));
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, new JoinErrorScreen(this.parent, message));
         }
     }
 
@@ -177,7 +178,7 @@ public class JoinPortalScreen extends Screen {
         }
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(new JoinErrorScreen(this.parent, message));
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, new JoinErrorScreen(this.parent, message));
         }
     }
 
@@ -192,7 +193,7 @@ public class JoinPortalScreen extends Screen {
         }
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
-            minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(minecraft, this.parent);
         }
     }
 
@@ -201,8 +202,7 @@ public class JoinPortalScreen extends Screen {
     // ------------------------------------------------------------------
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         long now = Time.millis();
         long elapsed = now - this.openedAt;
 
@@ -210,7 +210,7 @@ public class JoinPortalScreen extends Screen {
         float originX = this.width / 2.0F - COLS * block / 2.0F;
         float originY = this.height / 2.0F - ROWS * block / 2.0F + 4.0F;
 
-        guiGraphics.drawCenteredString(this.font, Component.literal("正在建立连接"), this.width / 2, 20, 0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font, Component.literal("正在建立连接"), this.width / 2, 20, 0xFFFFFF);
 
         float lastBlockAt = BLOCK_START_MS + (FRAME.length - 1) * BLOCK_STEP_MS;
         boolean ignited = elapsed >= lastBlockAt + IGNITE_MS * 0.35F;
@@ -231,7 +231,7 @@ public class JoinPortalScreen extends Screen {
         this.drawStatus(guiGraphics, elapsed, block, originX, originY);
     }
 
-    private void drawPortal(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY,
+    private void drawPortal(Object guiGraphics, long elapsed, float block, float originX, float originY,
                             boolean ignited) {
         float lastBlockAt = BLOCK_START_MS + (FRAME.length - 1) * BLOCK_STEP_MS;
 
@@ -257,7 +257,7 @@ public class JoinPortalScreen extends Screen {
             Render.translate(guiGraphics, x + block / 2.0F, y + block / 2.0F - drop);
             Render.scale(guiGraphics, scale * pop, scale * pop);
             Render.translate(guiGraphics, -8.0F, -8.0F);
-            guiGraphics.renderItem(OBSIDIAN, 0, 0);
+            Gfx.item(guiGraphics, OBSIDIAN, 0, 0);
             Render.pop(guiGraphics);
 
             // 落地灰尘
@@ -268,7 +268,7 @@ public class JoinPortalScreen extends Screen {
                 for (int d = 0; d < 4; d++) {
                     float dx = x + block / 2.0F + (d - 1.5F) * block * 0.22F;
                     float dy = y + block - 2 + (d % 2) * 2;
-                    guiGraphics.fill((int) dx, (int) dy, (int) dx + 2, (int) dy + 2, color);
+                    Gfx.fill(guiGraphics, (int) dx, (int) dy, (int) dx + 2, (int) dy + 2, color);
                 }
             }
         }
@@ -287,7 +287,7 @@ public class JoinPortalScreen extends Screen {
             int top = Math.max(0, (int) (cy - radius));
             int bottom = Math.min(this.height - 44, (int) (cy + radius));
             if (right > left && bottom > top) {
-                guiGraphics.fill(left, top, right, bottom, color);
+                Gfx.fill(guiGraphics, left, top, right, bottom, color);
             }
         }
         if (ignited) {
@@ -295,11 +295,11 @@ public class JoinPortalScreen extends Screen {
             float pulse = 0.5F + 0.5F * (float) Math.sin(elapsed * 0.004);
             int alpha = (int) (40 + 60 * pulse);
             int color = (alpha << 24) | 0xB06BFF;
-            guiGraphics.hLine((int) originX, (int) (originX + COLS * block - 1), (int) (originY - 1), color);
-            guiGraphics.hLine((int) originX, (int) (originX + COLS * block - 1),
+            Gfx.hLine(guiGraphics, (int) originX, (int) (originX + COLS * block - 1), (int) (originY - 1), color);
+            Gfx.hLine(guiGraphics, (int) originX, (int) (originX + COLS * block - 1),
                     (int) (originY + ROWS * block), color);
-            guiGraphics.vLine((int) (originX - 1), (int) originY, (int) (originY + ROWS * block), color);
-            guiGraphics.vLine((int) (originX + COLS * block), (int) originY,
+            Gfx.vLine(guiGraphics, (int) (originX - 1), (int) originY, (int) (originY + ROWS * block), color);
+            Gfx.vLine(guiGraphics, (int) (originX + COLS * block), (int) originY,
                     (int) (originY + ROWS * block), color);
         }
     }
@@ -308,7 +308,7 @@ public class JoinPortalScreen extends Screen {
      * 贴图版传送门：先播 {@link AnimSheet#PORTAL_BUILD}（16 帧逐块搭建），
      * 播完后门框完成、内部换成 {@link AnimSheet#PORTAL_SWIRL} 循环漩涡。
      */
-    private void drawPortalSprite(GuiGraphics guiGraphics, float block, float originX, float originY) {
+    private void drawPortalSprite(Object guiGraphics, float block, float originX, float originY) {
         if (!this.spriteBuildStarted) {
             this.spriteBuildStarted = true;
             AnimSheet.PORTAL_BUILD.restart();
@@ -331,7 +331,7 @@ public class JoinPortalScreen extends Screen {
     }
 
     /** 连接成功瞬间的白闪 + 扩散环（贴图动画与程序化绘制两条路径共用）。 */
-    private void drawConnectFlash(GuiGraphics guiGraphics, float block, float originX, float originY) {
+    private void drawConnectFlash(Object guiGraphics, float block, float originX, float originY) {
         if (!this.connected) {
             return;
         }
@@ -345,13 +345,13 @@ public class JoinPortalScreen extends Screen {
         float ih = 3 * block;
         float k = since / 500.0F;
         int alpha = (int) (170 * (1.0F - k));
-        guiGraphics.fill((int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih), (alpha << 24) | 0xFFFFFF);
+        Gfx.fill(guiGraphics, (int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih), (alpha << 24) | 0xFFFFFF);
         float radius = block * (0.5F + k * 2.6F);
         int ring = (int) (140 * (1.0F - k));
         drawRing(guiGraphics, ix + iw / 2.0F, iy + ih / 2.0F, radius, (ring << 24) | 0xA877FF);
     }
 
-    private void drawInterior(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY) {
+    private void drawInterior(Object guiGraphics, long elapsed, float block, float originX, float originY) {
         float ix = originX + block;
         float iy = originY + block;
         float iw = 2 * block;
@@ -362,7 +362,7 @@ public class JoinPortalScreen extends Screen {
         float pulse = 0.5F + 0.5F * (float) Math.sin(elapsed * 0.0035);
         int top = withAlpha(0x1E0A33, 0.85F);
         int bottom = withAlpha(0x6F24C9, 0.75F + 0.20F * pulse);
-        guiGraphics.fillGradient((int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih), top, bottom);
+        Gfx.fillGradient(guiGraphics, (int) ix, (int) iy, (int) (ix + iw), (int) (iy + ih), top, bottom);
 
         // 旋涡手臂
         int arms = 9;
@@ -377,7 +377,7 @@ public class JoinPortalScreen extends Screen {
                 int alpha = (int) (40 + 150 * ratio);
                 int color = (alpha << 24) | 0xE9D6FF;
                 int size = ratio > 0.6F ? 3 : 2;
-                guiGraphics.fill((int) px, (int) py, (int) px + size, (int) py + size, color);
+                Gfx.fill(guiGraphics, (int) px, (int) py, (int) px + size, (int) py + size, color);
             }
         }
 
@@ -390,36 +390,36 @@ public class JoinPortalScreen extends Screen {
             float py = iy + ih - progress * (ih - 4);
             int alpha = (int) (180 * (1.0F - progress));
             int color = (alpha << 24) | 0xD9A7FF;
-            guiGraphics.fill((int) px, (int) py, (int) px + 1, (int) py + 1, color);
+            Gfx.fill(guiGraphics, (int) px, (int) py, (int) px + 1, (int) py + 1, color);
         }
 
         // 连接成功的白闪 + 扩散环（与贴图路径共用）
         this.drawConnectFlash(guiGraphics, block, originX, originY);
     }
 
-    private void drawStatus(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY) {
+    private void drawStatus(Object guiGraphics, long elapsed, float block, float originX, float originY) {
         int textY = (int) (originY + ROWS * block + 14);
         int dots = (int) ((elapsed / 350) % 4);
         String waiting = this.connected ? "连接成功" : "正在建立隧道" + ".".repeat(dots);
-        guiGraphics.drawCenteredString(this.font, Component.literal(waiting), this.width / 2, textY, 0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font, Component.literal(waiting), this.width / 2, textY, 0xFFFFFF);
         if (!this.connected) {
             long seconds = Math.max(0L, (elapsed) / 1000L);
-            guiGraphics.drawCenteredString(this.font, Component.literal("已等待 " + seconds + " 秒"),
+            Gfx.centeredText(guiGraphics, this.font, Component.literal("已等待 " + seconds + " 秒"),
                     this.width / 2, textY + 13, 0xA0A0A0);
         }
         if (this.statusText != null && !this.statusText.isEmpty() && this.height - 70 > textY + 26) {
-            guiGraphics.drawCenteredString(this.font, Component.literal(this.statusText),
+            Gfx.centeredText(guiGraphics, this.font, Component.literal(this.statusText),
                     this.width / 2, textY + 26, 0x7F7FC0);
         }
     }
 
-    private void drawRing(GuiGraphics guiGraphics, float cx, float cy, float radius, int color) {
+    private void drawRing(Object guiGraphics, float cx, float cy, float radius, int color) {
         int points = 64;
         for (int i = 0; i < points; i++) {
             double angle = i * Math.PI * 2 / points;
             int px = (int) (cx + Math.cos(angle) * radius);
             int py = (int) (cy + Math.sin(angle) * radius);
-            guiGraphics.fill(px, py, px + 2, py + 2, color);
+            Gfx.fill(guiGraphics, px, py, px + 2, py + 2, color);
         }
     }
 

@@ -11,7 +11,6 @@ import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
@@ -40,11 +39,19 @@ public class P2PCClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> LanAnnouncer.tick());
 
 		// 右上角网络状态队列：只在「加入别人世界」时显示（加载中 / 备用节点 / 高延迟）
-		HudRenderCallback.EVENT.register(new NetworkStatusHud());
+		// 26.3 起旧的 HudRenderCallback 被 HudElementRegistry 取代。
+		//? if <26.3 {
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT
+				.register(new NetworkStatusHud());
+		//?} else {
+		/*net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry.addLast(
+				net.minecraft.resources.Identifier.fromNamespaceAndPath("p2pc", "network_status_icons"),
+				new NetworkStatusHud());
+		*///?}
 
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (screen instanceof TitleScreen) {
-				List<AbstractWidget> buttons = Screens.getButtons(screen);
+				List<AbstractWidget> buttons = a90pn.p2pc.compat.Widgets.buttons(screen);
 				// 窗口缩放/重新 init 时 AFTER_INIT 会再次触发，避免叠加出第二个按钮。
 				if (buttons.stream().anyMatch(widget -> widget instanceof PearlButton)) {
 					return;
@@ -54,7 +61,7 @@ public class P2PCClient implements ClientModInitializer {
 				int x = anchor != null ? anchor.getX() + anchor.getWidth() + 8 : scaledWidth - 40;
 				int y = anchor != null ? anchor.getY() : scaledHeight / 2 - 10;
 				buttons.add(new PearlButton(x, y, Component.empty(), Component.literal("加入世界"),
-						button -> Minecraft.getInstance().setScreen(new JoinUI(Component.empty(), screen))));
+						button -> a90pn.p2pc.compat.ScreenSwap.to(Minecraft.getInstance(), new JoinUI(Component.empty(), screen))));
 			} else if (screen instanceof PauseScreen && Minecraft.getInstance().getSingleplayerServer() != null) {
 				replaceShareToLanButton(screen);
 			}
@@ -68,7 +75,7 @@ public class P2PCClient implements ClientModInitializer {
 	 * 所以两种文字都要认；此时按钮文字换成「管理房间」，点开是房间管理页。</p>
 	 */
 	private static void replaceShareToLanButton(net.minecraft.client.gui.screens.Screen screen) {
-		List<AbstractWidget> buttons = Screens.getButtons(screen);
+		List<AbstractWidget> buttons = a90pn.p2pc.compat.Widgets.buttons(screen);
 		if (buttons.stream().anyMatch(widget -> widget instanceof LanShareButton)) {
 			return;
 		}
@@ -114,6 +121,6 @@ public class P2PCClient implements ClientModInitializer {
 			return;
 		}
 		boolean hosting = P2PC.getInstance().getSculkManager().getStatus() == SculkStatues.HOST;
-		minecraft.setScreen(hosting ? HostScreen.reopen(parent) : new HostUI(Component.empty(), parent));
+		a90pn.p2pc.compat.ScreenSwap.to(minecraft, hosting ? HostScreen.reopen(parent) : new HostUI(Component.empty(), parent));
 	}
 }

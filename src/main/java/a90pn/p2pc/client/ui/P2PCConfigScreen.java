@@ -1,9 +1,9 @@
 package a90pn.p2pc.client.ui;
 
-import a90pn.p2pc.compat.Cycles;
-
 import a90pn.p2pc.client.HostSettings;
-import net.minecraft.client.gui.GuiGraphics;
+import a90pn.p2pc.compat.BaseScreen;
+import a90pn.p2pc.compat.Cycles;
+import a90pn.p2pc.compat.Gfx;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.GameType;
  * <p>所有改动即时写入 {@code config/p2pc-client.properties}，不需要点保存；
  * 正在进行的房间不受影响，下次打开设置页才生效。</p>
  */
-public class P2PCConfigScreen extends Screen {
+public class P2PCConfigScreen extends BaseScreen {
     private static final int WIDGET_WIDTH = 220;
     private static final int ROW = 24;
 
@@ -106,13 +106,13 @@ public class P2PCConfigScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, Math.max(8, this.top - 34), 0xFFFFFF);
+    protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
+        Gfx.centeredText(guiGraphics, this.font, this.title, this.width / 2, Math.max(8, this.top - 34),
+                0xFFFFFF);
         int x = this.width / 2 - WIDGET_WIDTH / 2;
         // 每行左边的小标签
-        guiGraphics.drawString(this.font, "默认端口", x, this.top - 10, 0xA0A0A0);
-        guiGraphics.drawCenteredString(this.font,
+        Gfx.text(guiGraphics, this.font, "默认端口", x, this.top - 10, 0xA0A0A0);
+        Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("加入别人的世界时，可把本机隧道入口公告到局域网列表"),
                 this.width / 2, this.top + ROW * 6 + 2, 0x808080);
     }
@@ -120,7 +120,7 @@ public class P2PCConfigScreen extends Screen {
     @Override
     public void onClose() {
         if (this.minecraft != null) {
-            this.minecraft.setScreen(this.parent);
+            a90pn.p2pc.compat.ScreenSwap.to(this.minecraft, this.parent);
         }
     }
 

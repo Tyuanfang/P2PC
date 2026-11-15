@@ -3,7 +3,6 @@ package a90pn.p2pc.client.ui;
 import a90pn.p2pc.compat.Textures;
 import a90pn.p2pc.compat.Time;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * 横向 sprite sheet 播放器：把一张「N 帧并排」的 PNG 按时间切帧画到 GUI 上。
@@ -105,7 +104,7 @@ public final class AnimSheet {
     }
 
     /** 直接画某一帧（不做时间推进）。 */
-    public void drawFrame(GuiGraphics guiGraphics, int x, int y, int width, int height, int frameIndex) {
+    public void drawFrame(Object guiGraphics, int x, int y, int width, int height, int frameIndex) {
         if (!available()) {
             return;
         }
@@ -121,7 +120,7 @@ public final class AnimSheet {
     }
 
     /** 按内部时钟画当前帧。 */
-    public void draw(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+    public void draw(Object guiGraphics, int x, int y, int width, int height) {
         drawFrame(guiGraphics, x, y, width, height, currentFrame());
     }
 

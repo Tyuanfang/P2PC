@@ -1,7 +1,6 @@
 package a90pn.p2pc.client.ui;
 
 import a90pn.p2pc.compat.Textures;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
@@ -26,18 +25,49 @@ public class PearlButton extends Button {
 
     //? if <1.21.11 {
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderWidget(
+            net.minecraft.client.gui.GuiGraphics guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick) {
         this.drawIcon(guiGraphics);
     }
     //?} else {
-    /*@Override
-    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    /*//? if <26.3 {
+    @Override
+    protected void renderContents(
+            net.minecraft.client.gui.GuiGraphics guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick) {
         this.drawIcon(guiGraphics);
     }
+    //?} else {
+    /^@Override
+    protected void extractContents(
+            net.minecraft.client.gui.GuiGraphicsExtractor guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick) {
+        this.drawIcon(guiGraphics);
+    }
+    ^///?}
     *///?}
 
-    private void drawIcon(GuiGraphics guiGraphics) {
+    private void drawIcon(Object graphics) {
         Object texture = this.isHoveredOrFocused() ? TEXTURE_HOVER : TEXTURE_IDLE;
-        Textures.blit(guiGraphics, texture, this.getX(), this.getY(), SIZE, SIZE, 0.0F, 0.0F, SIZE, SIZE, SIZE, SIZE);
+        Textures.blit(
+                graphics,
+                texture,
+                this.getX(),
+                this.getY(),
+                SIZE,
+                SIZE,
+                0.0F,
+                0.0F,
+                SIZE,
+                SIZE,
+                SIZE,
+                SIZE);
     }
 }

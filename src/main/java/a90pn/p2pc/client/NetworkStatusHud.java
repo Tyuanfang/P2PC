@@ -10,11 +10,10 @@ import a90pn.p2pc.ffi.TunnelState;
 import a90pn.p2pc.ffi.TunnelStatus;
 import java.util.ArrayList;
 import java.util.List;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import a90pn.p2pc.compat.Gfx;
 import a90pn.p2pc.compat.Textures;
 import a90pn.p2pc.compat.Time;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
 
 /**
@@ -30,7 +29,11 @@ import net.minecraft.client.DeltaTracker;
  *   <li>{@code high_ping.png}：当前最佳连接的 RTT 超过阈值。</li>
  * </ul>
  */
-public final class NetworkStatusHud implements HudRenderCallback {
+//? if <26.3 {
+public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback {
+//?} else {
+/*public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement {
+*///?}
     /** 单个图标的逻辑尺寸（像素）。 */
     private static final int ICON = 16;
     /** 图标之间的间距。 */
@@ -58,8 +61,20 @@ public final class NetworkStatusHud implements HudRenderCallback {
     /**
      * Fabric 的 HUD 回调。只画图标，不拦截任何输入。
      */
+    //? if <26.3 {
     @Override
-    public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public void onHudRender(net.minecraft.client.gui.GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+        this.render(guiGraphics);
+    }
+    //?} else {
+    /*@Override
+    public void extractRenderState(
+            net.minecraft.client.gui.GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
+        this.render(guiGraphics);
+    }
+    *///?}
+
+    private void render(Object guiGraphics) {
         List<Object> queue = collectQueue();
         if (queue.isEmpty()) {
             return;
@@ -70,7 +85,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
         for (int i = queue.size() - 1; i >= 0; i--) {
             Object texture = queue.get(i);
             x -= ICON;
-            guiGraphics.fill(x - 1, y - 1, x + ICON + 1, y + ICON + 1, 0x66000000);
+            Gfx.fill(guiGraphics, x - 1, y - 1, x + ICON + 1, y + ICON + 1, 0x66000000);
             if (texture == null) {
                 // null 代表「加载中」，走多帧动画
                 AnimSheet.LOADING.draw(guiGraphics, x, y, ICON, ICON);
