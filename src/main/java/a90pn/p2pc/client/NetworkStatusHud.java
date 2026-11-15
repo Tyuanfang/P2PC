@@ -11,11 +11,11 @@ import a90pn.p2pc.ffi.TunnelStatus;
 import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.Util;
+import a90pn.p2pc.compat.Textures;
+import a90pn.p2pc.compat.Time;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * 右上角的联机网络状态图标队列。
@@ -42,10 +42,10 @@ public final class NetworkStatusHud implements HudRenderCallback {
     /** 切到中继后「备用节点」图标保留多久。 */
     private static final long ALTERNATE_HOLD_MS = 4000L;
 
-    private static final ResourceLocation HIGH_PING_ICON =
-            ResourceLocation.parse("p2pc:textures/gui/high_ping.png");
-    private static final ResourceLocation ALTERNATE_NODE_ICON =
-            ResourceLocation.parse("p2pc:textures/gui/alternate_node.png");
+    private static final Object HIGH_PING_ICON =
+            Textures.parse("p2pc:textures/gui/high_ping.png");
+    private static final Object ALTERNATE_NODE_ICON =
+            Textures.parse("p2pc:textures/gui/alternate_node.png");
 
     /** 上一次的最佳路径是否走中继；用来检测「直连 → 中继」的切换。 */
     private boolean lastRelay;
@@ -60,7 +60,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
      */
     @Override
     public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-        List<ResourceLocation> queue = collectQueue();
+        List<Object> queue = collectQueue();
         if (queue.isEmpty()) {
             return;
         }
@@ -68,7 +68,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
         int x = width - MARGIN;
         int y = MARGIN;
         for (int i = queue.size() - 1; i >= 0; i--) {
-            ResourceLocation texture = queue.get(i);
+            Object texture = queue.get(i);
             x -= ICON;
             guiGraphics.fill(x - 1, y - 1, x + ICON + 1, y + ICON + 1, 0x66000000);
             if (texture == null) {
@@ -76,7 +76,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
                 AnimSheet.LOADING.draw(guiGraphics, x, y, ICON, ICON);
             } else {
                 // 源图是 64×64，画到 16×16；GUI 贴图是最近邻采样，缩小后仍然是清晰的像素图标
-                guiGraphics.blit(texture, x, y, ICON, ICON, 0.0F, 0.0F, 64, 64, 64, 64);
+                Textures.blit(guiGraphics, texture, x, y, ICON, ICON, 0.0F, 0.0F, 64, 64, 64, 64);
             }
             x -= GAP;
         }
@@ -86,7 +86,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
      * 根据当前隧道状态收集要显示的状态图标（左→右的顺序即队列顺序）。
      * 没有联机、不在加入状态时返回空列表并清空内部状态。
      */
-    private List<ResourceLocation> collectQueue() {
+    private List<Object> collectQueue() {
         P2PC mod = P2PC.getInstance();
         if (mod == null) {
             reset();
@@ -102,7 +102,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
             return List.of();
         }
 
-        List<ResourceLocation> queue = new ArrayList<>(3);
+        List<Object> queue = new ArrayList<>(3);
         boolean loading = true;
         boolean relay = false;
         boolean highPing = false;
@@ -126,7 +126,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
             }
             // 直连 → 中继：说明直连断了、切到备用节点，图标保留几秒提醒玩家
             if (this.hasLastRelay && !this.lastRelay && relay) {
-                this.alternateNodeUntil = Util.getMillis() + ALTERNATE_HOLD_MS;
+                this.alternateNodeUntil = Time.millis() + ALTERNATE_HOLD_MS;
             }
             this.lastRelay = relay;
             this.hasLastRelay = true;
@@ -140,7 +140,7 @@ public final class NetworkStatusHud implements HudRenderCallback {
             // null 是「加载中」的占位，见 onHudRender
             queue.add(null);
         }
-        if (Util.getMillis() < this.alternateNodeUntil) {
+        if (Time.millis() < this.alternateNodeUntil) {
             queue.add(ALTERNATE_NODE_ICON);
         }
         if (highPing) {

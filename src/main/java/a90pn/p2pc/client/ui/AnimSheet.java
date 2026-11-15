@@ -1,9 +1,9 @@
 package a90pn.p2pc.client.ui;
 
-import net.minecraft.Util;
+import a90pn.p2pc.compat.Textures;
+import a90pn.p2pc.compat.Time;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * 横向 sprite sheet 播放器：把一张「N 帧并排」的 PNG 按时间切帧画到 GUI 上。
@@ -40,7 +40,8 @@ public final class AnimSheet {
     public static final AnimSheet LOADING = new AnimSheet(
             "p2pc:textures/gui/loading_frames.png", 16, 16, 64, 20, true);
 
-    private final ResourceLocation texture;
+    /** 贴图 id（Object 是为了跨版本兼容 ResourceLocation / Identifier 的改名）。 */
+    private final Object texture;
     private final int frameWidth;
     private final int frameHeight;
     private final int frames;
@@ -54,7 +55,7 @@ public final class AnimSheet {
     private boolean started;
 
     private AnimSheet(String path, int frameWidth, int frameHeight, int frames, int frameMs, boolean loop) {
-        this.texture = ResourceLocation.parse(path);
+        this.texture = Textures.parse(path);
         this.frameWidth = frameWidth;
         this.frameHeight = frameHeight;
         this.frames = frames;
@@ -65,10 +66,7 @@ public final class AnimSheet {
     /** 贴图是否真的在资源包里；用来决定走贴图动画还是退回程序化绘制。 */
     public boolean available() {
         if (available == null) {
-            available = Minecraft.getInstance()
-                    .getResourceManager()
-                    .getResource(texture)
-                    .isPresent();
+            available = Textures.exists(texture);
         }
         return available;
     }
@@ -76,7 +74,7 @@ public final class AnimSheet {
     /** 从头开始播放（多次调用等价于重置到第一帧）。 */
     public void restart() {
         this.started = true;
-        this.startedAt = Util.getMillis();
+        this.startedAt = Time.millis();
     }
 
     /** 是否已经播放完（非循环动画到最后一帧之后为 true；循环动画永远 false）。 */
@@ -101,7 +99,7 @@ public final class AnimSheet {
         if (!started) {
             return 0;
         }
-        long elapsed = Math.max(0L, Util.getMillis() - startedAt);
+        long elapsed = Math.max(0L, Time.millis() - startedAt);
         long index = elapsed / frameMs;
         return (int) Math.min(index, Integer.MAX_VALUE);
     }
@@ -113,7 +111,8 @@ public final class AnimSheet {
         }
         int index = Math.max(0, Math.min(frameIndex, frames - 1));
         // blit(贴图, 目标x, 目标y, 目标宽, 目标高, 源u, 源v, 源宽, 源高, 贴图总宽, 贴图总高)
-        guiGraphics.blit(
+        Textures.blit(
+                guiGraphics,
                 texture,
                 x, y, width, height,
                 (float) (index * frameWidth), 0.0F,

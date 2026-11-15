@@ -26,11 +26,8 @@ stonecutter {
             for (it in loaders) version("$version-$it", version)
         }
 
-        // 目前只做 Fabric 多版本：P2PC 的客户端 UI 深度依赖 Fabric API
-        // （ScreenEvents / HudRenderCallback / ClientTickEvents / ClientPlayConnectionEvents），
-        // Forge/NeoForge 需要另写一套事件与界面层，等 Fabric 版本稳定后再逐版本补。
         mc("1.21.1", "fabric")
-
+        mc("1.21.11", "fabric")
 
 
         vcsVersion = "1.21.1-fabric"

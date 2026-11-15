@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.Util;
+import a90pn.p2pc.compat.Time;
 
 
 public class JoinUI extends Screen {
@@ -51,7 +51,7 @@ public class JoinUI extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        long now = Util.getMillis();
+        long now = Time.millis();
         guiGraphics.drawCenteredString(this.font, Component.literal("加入世界"), this.width / 2, 36, 0xFFFFFF);
         guiGraphics.drawCenteredString(this.font, Component.literal("粘贴好友分享的邀请码"),
                 this.width / 2, this.height / 2 - 34, 0xA0A0A0);
@@ -72,6 +72,7 @@ public class JoinUI extends Screen {
         super.tick();
     }
 
+    //? if <1.21.11 {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 257 || keyCode == 335) { // Enter / 小键盘 Enter
@@ -80,6 +81,16 @@ public class JoinUI extends Screen {
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
+    //?} else {
+    /*@Override
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        if (event.key() == 257 || event.key() == 335) { // Enter / 小键盘 Enter
+            this.submit();
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+    *///?}
 
     private void submit() {
         String code = this.codeBox.getValue().replaceAll("\\s+", "");
@@ -103,7 +114,7 @@ public class JoinUI extends Screen {
 
     private void showError(String text, long durationMs) {
         this.errorText = text;
-        this.errorUntil = Util.getMillis() + durationMs;
+        this.errorUntil = Time.millis() + durationMs;
     }
 
     @Override

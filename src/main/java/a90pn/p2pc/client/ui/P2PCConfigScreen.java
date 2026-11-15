@@ -1,5 +1,7 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.compat.Cycles;
+
 import a90pn.p2pc.client.HostSettings;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -58,11 +60,11 @@ public class P2PCConfigScreen extends Screen {
 
         // 游戏模式
         y += ROW;
-        this.addRenderableWidget(CycleButton.<GameType>builder(type -> Component.literal(displayName(type)))
-                .withValues(GameType.SURVIVAL, GameType.CREATIVE, GameType.ADVENTURE, GameType.SPECTATOR)
-                .withInitialValue(HostSettings.gameMode())
-                .create(x, y, WIDGET_WIDTH, 20, Component.literal("游戏模式"),
-                        (button, value) -> HostSettings.setGameMode(value)));
+        this.addRenderableWidget(Cycles.cycle(type -> Component.literal(displayName(type)),
+                HostSettings.gameMode(),
+                x, y, WIDGET_WIDTH, 20, Component.literal("游戏模式"),
+                (button, value) -> HostSettings.setGameMode(value),
+                GameType.SURVIVAL, GameType.CREATIVE, GameType.ADVENTURE, GameType.SPECTATOR));
 
         // 允许作弊
         y += ROW;

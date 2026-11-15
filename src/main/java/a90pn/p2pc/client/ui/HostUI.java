@@ -1,5 +1,7 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.compat.Cycles;
+
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.SculkClient;
 import a90pn.p2pc.Sculk.SculkStatues;
@@ -60,11 +62,10 @@ public class HostUI extends Screen {
         this.top = this.height / 2 - 96;
 
         // 第一行：游戏模式 / 允许作弊
-        this.addRenderableWidget(CycleButton.builder(this::gameModeName)
-                .withValues(GameType.SURVIVAL, GameType.CREATIVE, GameType.ADVENTURE, GameType.SPECTATOR)
-                .withInitialValue(this.gameMode)
-                .create(this.leftX, this.top, COLUMN, 20, Component.literal("游戏模式"),
-                        (button, value) -> this.gameMode = value));
+        this.addRenderableWidget(Cycles.cycle(this::gameModeName, this.gameMode,
+                this.leftX, this.top, COLUMN, 20, Component.literal("游戏模式"),
+                (button, value) -> this.gameMode = value,
+                GameType.SURVIVAL, GameType.CREATIVE, GameType.ADVENTURE, GameType.SPECTATOR));
 
         this.addRenderableWidget(CycleButton.onOffBuilder(this.allowCheats)
                 .create(this.rightX, this.top, COLUMN, 20, Component.literal("允许作弊"),
@@ -179,7 +180,10 @@ public class HostUI extends Screen {
         // 对应 MCWiFiPnP 的 Config.applyTo：正版验证 / PvP / MOTD。
         boolean previousOnlineMode = server.usesAuthentication();
         server.setUsesAuthentication(!this.offline);
+        // 1.21.11 起原版删掉了 setPvpAllowed，这个开关在新版本上不生效
+        //? if <1.21.11 {
         server.setPvpAllowed(this.pvp);
+        //?}
         server.setMotd(motd);
 
         HostSettings.setLastPort(actualPort);

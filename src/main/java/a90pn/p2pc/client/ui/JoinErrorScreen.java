@@ -1,5 +1,7 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.compat.Render;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -9,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.minecraft.Util;
+import a90pn.p2pc.compat.Time;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -27,7 +29,7 @@ public class JoinErrorScreen extends Screen {
 
     private final Screen parent;
     private final String errorMessage;
-    private final long openedAt = Util.getMillis();
+    private final long openedAt = Time.millis();
 
     private boolean boomed;
     private boolean playedSound;
@@ -51,7 +53,7 @@ public class JoinErrorScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        long t = Util.getMillis() - this.openedAt;
+        long t = Time.millis() - this.openedAt;
         if (!this.boomed && t >= DROP_MS) {
             this.boomed = true;
             if (!this.playedSound) {
@@ -67,18 +69,17 @@ public class JoinErrorScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        long t = Util.getMillis() - this.openedAt;
+        long t = Time.millis() - this.openedAt;
         float cx = this.width / 2.0F;
         float cy = this.height / 2.0F - 10.0F;
 
-        guiGraphics.pose().pushPose();
+        Render.push(guiGraphics);
         if (this.boomed && t < DROP_MS + SHAKE_MS) {
             float k = 1.0F - ((t - DROP_MS) / (float) SHAKE_MS);
             float shake = 6.0F * k * k;
-            guiGraphics.pose().translate(
+            Render.translate(guiGraphics,
                     (float) Math.sin(t * 0.11F) * shake,
-                    (float) Math.cos(t * 0.17F) * shake,
-                    0.0F);
+                    (float) Math.cos(t * 0.17F) * shake);
         }
         if (!this.boomed) {
             if (AnimSheet.TNT_FUSE.available()) {
@@ -99,7 +100,7 @@ public class JoinErrorScreen extends Screen {
                 this.drawExplosion(guiGraphics, since, cx, cy);
             }
         }
-        guiGraphics.pose().popPose();
+        Render.pop(guiGraphics);
 
         long textAt = DROP_MS + (long) (BLAST_MS * 0.5);
         if (t >= textAt) {
@@ -159,12 +160,12 @@ public class JoinErrorScreen extends Screen {
         float y = topY + (landY - topY) * eased;
         float scale = 3.2F;
         float stretch = 1.0F + 0.12F * Math.min(1.0F, progress * 1.4F);
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(cx, y + 24.0F, 0.0F);
-        guiGraphics.pose().scale(scale / stretch, scale * stretch, 1.0F);
-        guiGraphics.pose().translate(-8.0F, -8.0F, 0.0F);
+        Render.push(guiGraphics);
+        Render.translate(guiGraphics, cx, y + 24.0F);
+        Render.scale(guiGraphics, scale / stretch, scale * stretch);
+        Render.translate(guiGraphics, -8.0F, -8.0F);
         guiGraphics.renderItem(TNT, 0, 0);
-        guiGraphics.pose().popPose();
+        Render.pop(guiGraphics);
 
         long sparkSeed = t / 60L;
         for (int i = 0; i < 6; i++) {

@@ -1,10 +1,10 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.compat.Textures;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * 标题界面里的「加入世界」按钮：直接用贴图绘制，悬停时切换到高亮版本。
@@ -14,19 +14,30 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class PearlButton extends Button {
     private static final int SIZE = 20;
-    private static final ResourceLocation TEXTURE_IDLE =
-            ResourceLocation.fromNamespaceAndPath("p2pc", "textures/gui/open_button_normal.png");
-    private static final ResourceLocation TEXTURE_HOVER =
-            ResourceLocation.fromNamespaceAndPath("p2pc", "textures/gui/open_button_hower.png");
+    private static final Object TEXTURE_IDLE =
+            Textures.of("p2pc", "textures/gui/open_button_normal.png");
+    private static final Object TEXTURE_HOVER =
+            Textures.of("p2pc", "textures/gui/open_button_hower.png");
 
     public PearlButton(int x, int y, Component message, Component tooltip, OnPress onPress) {
         super(x, y, SIZE, SIZE, message, onPress, DEFAULT_NARRATION);
         this.setTooltip(Tooltip.create(tooltip));
     }
 
+    //? if <1.21.11 {
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        ResourceLocation texture = this.isHoveredOrFocused() ? TEXTURE_HOVER : TEXTURE_IDLE;
-        guiGraphics.blit(texture, this.getX(), this.getY(), 0.0F, 0.0F, SIZE, SIZE, SIZE, SIZE);
+        this.drawIcon(guiGraphics);
+    }
+    //?} else {
+    /*@Override
+    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.drawIcon(guiGraphics);
+    }
+    *///?}
+
+    private void drawIcon(GuiGraphics guiGraphics) {
+        Object texture = this.isHoveredOrFocused() ? TEXTURE_HOVER : TEXTURE_IDLE;
+        Textures.blit(guiGraphics, texture, this.getX(), this.getY(), SIZE, SIZE, 0.0F, 0.0F, SIZE, SIZE, SIZE, SIZE);
     }
 }

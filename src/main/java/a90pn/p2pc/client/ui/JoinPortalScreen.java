@@ -6,7 +6,7 @@ import a90pn.p2pc.Sculk.SculkManager;
 import a90pn.p2pc.Sculk.SculkStatues;
 import a90pn.p2pc.ffi.JoinConfig;
 import a90pn.p2pc.ffi.JoinOptions;
-import com.mojang.blaze3d.vertex.PoseStack;
+import a90pn.p2pc.compat.Render;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.util.Mth;
-import net.minecraft.Util;
+import a90pn.p2pc.compat.Time;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -39,7 +39,7 @@ public class JoinPortalScreen extends Screen {
 
     private final String inviteCode;
     private final Screen parent;
-    private final long openedAt = Util.getMillis();
+    private final long openedAt = Time.millis();
 
     private boolean started;
     private boolean connected;
@@ -113,7 +113,7 @@ public class JoinPortalScreen extends Screen {
         }
         if (!this.connected && kind == MassageKind.INFO && "已连接".equals(message)) {
             this.connected = true;
-            this.connectedAt = Util.getMillis();
+            this.connectedAt = Time.millis();
             this.statusText = "隧道已建立，正在进入世界…";
             this.playLocalSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F);
             return;
@@ -135,7 +135,7 @@ public class JoinPortalScreen extends Screen {
         if (this.failed || this.entered) {
             return;
         }
-        long now = Util.getMillis();
+        long now = Time.millis();
         if (this.connected) {
             if (now - this.connectedAt >= ENTER_DELAY_MS) {
                 this.entered = true;
@@ -203,7 +203,7 @@ public class JoinPortalScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        long now = Util.getMillis();
+        long now = Time.millis();
         long elapsed = now - this.openedAt;
 
         float block = Math.min(46.0F, Math.max(20.0F, (this.height - 190.0F) / ROWS));
@@ -233,7 +233,6 @@ public class JoinPortalScreen extends Screen {
 
     private void drawPortal(GuiGraphics guiGraphics, long elapsed, float block, float originX, float originY,
                             boolean ignited) {
-        PoseStack pose = guiGraphics.pose();
         float lastBlockAt = BLOCK_START_MS + (FRAME.length - 1) * BLOCK_STEP_MS;
 
         for (int i = 0; i < FRAME.length; i++) {
@@ -254,12 +253,12 @@ public class JoinPortalScreen extends Screen {
             float scale = block / 16.0F * (0.75F + 0.25F * appear);
             float pop = 1.0F + 0.10F * (float) Math.sin(appear * Math.PI);
 
-            pose.pushPose();
-            pose.translate(x + block / 2.0F, y + block / 2.0F - drop, 0.0F);
-            pose.scale(scale * pop, scale * pop, 1.0F);
-            pose.translate(-8.0F, -8.0F, 0.0F);
+            Render.push(guiGraphics);
+            Render.translate(guiGraphics, x + block / 2.0F, y + block / 2.0F - drop);
+            Render.scale(guiGraphics, scale * pop, scale * pop);
+            Render.translate(guiGraphics, -8.0F, -8.0F);
             guiGraphics.renderItem(OBSIDIAN, 0, 0);
-            pose.popPose();
+            Render.pop(guiGraphics);
 
             // 落地灰尘
             if (t < 360L) {
@@ -336,7 +335,7 @@ public class JoinPortalScreen extends Screen {
         if (!this.connected) {
             return;
         }
-        long since = Util.getMillis() - this.connectedAt;
+        long since = Time.millis() - this.connectedAt;
         if (since >= 500L) {
             return;
         }
