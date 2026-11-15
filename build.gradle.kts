@@ -52,11 +52,33 @@ plugins.withId("java") {
     // Project Panama FFM，Java 22 才在正式版里可用，所以 1.21.x 统一抬到 22；
     // 26.x 的原版和加载器构件本身就是按 Java 25 编译的，只能跟着用 25。
     val p2pcJavaTarget = if (stonecutter.current.version.startsWith("26.")) 25 else 22
+
+    // maven.neoforged.net 在国内常被 DNS 污染（解析到 199.59.x）直接超时，
+    // 官方 CDN 镜像 neoforged.forgecdn.net 提供同路径构件，这里统一改写仓库地址。
+    // 必须在配置阶段就注册（configureEach 对之后加入的仓库也生效）：加载器插件会在
+    // 自己的 afterEvaluate 里解析 neoForge 依赖，放到我们的 afterEvaluate 里就太晚了。
+    repositories.withType<MavenArtifactRepository>().configureEach {
+        val base = url.toString()
+        if (base.startsWith("https://maven.neoforged.net")) {
+            setUrl(
+                "https://neoforged.forgecdn.net" +
+                    base.removePrefix("https://maven.neoforged.net"),
+            )
+        }
+    }
+
     afterEvaluate {
         extensions.configure<JavaPluginExtension> {
             sourceCompatibility = JavaVersion.toVersion(p2pcJavaTarget)
             targetCompatibility = JavaVersion.toVersion(p2pcJavaTarget)
-            toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+            // 1.21.x 的构建插件默认用 Java 21 工具链，但 FFM 需要 22+：抬到 25。
+            // forge 项目在配置阶段可能已经把这个属性 finalize（"languageVersion is final"），
+            // 那种情况下只保留 release 目标，编译用 Gradle 自身的 JDK。
+            try {
+                toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+            } catch (error: IllegalStateException) {
+                logger.warn("[p2pc] toolchain 已被加载器插件固定，改用 release 目标继续：{}", error.message)
+            }
         }
         tasks.withType<JavaCompile>().configureEach {
             options.release.set(p2pcJavaTarget)

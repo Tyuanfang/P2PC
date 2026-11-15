@@ -29,11 +29,18 @@ import net.minecraft.client.DeltaTracker;
  *   <li>{@code high_ping.png}：当前最佳连接的 RTT 超过阈值。</li>
  * </ul>
  */
+//? if fabric {
 //? if <26.3 {
 public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback {
 //?} else {
 /*public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement {
 *///?}
+//?} else {
+/*public final class NetworkStatusHud {
+*///?}
+    /** 共享实例：Fabric 的回调接口需要对象，NeoForge 的 RenderGuiEvent 直接调静态单例。 */
+    public static final NetworkStatusHud INSTANCE = new NetworkStatusHud();
+
     /** 单个图标的逻辑尺寸（像素）。 */
     private static final int ICON = 16;
     /** 图标之间的间距。 */
@@ -61,6 +68,7 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
     /**
      * Fabric 的 HUD 回调。只画图标，不拦截任何输入。
      */
+    //? if fabric {
     //? if <26.3 {
     @Override
     public void onHudRender(net.minecraft.client.gui.GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -73,8 +81,10 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
         this.render(guiGraphics);
     }
     *///?}
+    //?}
 
-    private void render(Object guiGraphics) {
+    /** 直接绘制到给定的绘制对象（旧版本是 GuiGraphics，26.3 起是 GuiGraphicsExtractor）。 */
+    public void render(Object guiGraphics) {
         List<Object> queue = collectQueue();
         if (queue.isEmpty()) {
             return;

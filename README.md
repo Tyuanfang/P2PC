@@ -28,11 +28,21 @@ P2PC 的目标是让 Minecraft 联机摆脱对公网服务器和内网穿透工�
 
 接下来重点：多人场景下的中继表现测试、中继服务器可配置、更多 Minecraft 版本。
 
+## 支持的版本
+
+| Minecraft | Fabric | Forge | NeoForge |
+|---|---|---|---|
+| 1.21.1 | ✅ | ✅ | ✅ |
+| 1.21.11 | ✅ | ✅ | ✅ |
+| 26.3 | ✅ | ✅ | ✅ |
+
+九个组合共用同一份 `src/`，加载器/版本差异靠 Stonecutter 的 `//? if ... {` 预处理注释分叉（例如按钮和图标的绘制 API 在 1.21.11 / 26.3 之间整体重写过）。`versions/dependencies/*.properties` 里写各版本的 Minecraft、loader 与加载器版本。
+
 ## 技术栈
 
 | 层 | 技术 |
 |---|---|
-| 模组平台 | Fabric（Minecraft Java Edition） |
+| 模组平台 | Fabric / NeoForge / Forge（Minecraft Java Edition） |
 | 模组语言 | Java |
 | P2P 核心 | Rust + sculk + iroh（QUIC） |
 | 绑定层 | UniFFI（生成 Java 绑定，Project Panama FFM） |
@@ -40,7 +50,7 @@ P2PC 的目标是让 Minecraft 联机摆脱对公网服务器和内网穿透工�
 
 ## 构建
 
-要求：**JDK 25**（生成的 FFM 绑定需要 Java 22+ 的字节码，构建脚本统一 `release = 22`）。
+要求：**JDK 25**。1.21.x 目标字节码 `release = 22`（生成的 FFM 绑定需要 Java 22+），26.x 目标 `release = 25`（原版与加载器构件本身是 Java 25 字节码）。
 
 ```shell
 # 当前激活版本（1.21.1-fabric）
