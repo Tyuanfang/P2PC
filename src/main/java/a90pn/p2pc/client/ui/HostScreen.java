@@ -1,5 +1,7 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.client.UiText;
+
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.MassageKind;
 import a90pn.p2pc.Sculk.SculkClient;
@@ -61,7 +63,7 @@ public class HostScreen extends BaseScreen {
     }
 
     private void onEvent(MassageKind kind, String message, String reason) {
-        String detail = reason == null || reason.isEmpty() ? message : message + "（" + reason + "）";
+        String detail = UiText.detail(message, reason);
         switch (kind) {
             case ERROR -> {
                 this.statusText = Component.literal(detail);
@@ -95,10 +97,10 @@ public class HostScreen extends BaseScreen {
                 .bounds(x, this.top + 24, WIDGET_WIDTH, 20)
                 .build());
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-                .bounds(x, this.top + 82, WIDGET_WIDTH, 20)
+                .bounds(x, this.top + 96, WIDGET_WIDTH, 20)
                 .build());
         this.addRenderableWidget(Button.builder(Component.literal("停止房间"), button -> this.stopRoom())
-                .bounds(x, this.top + 106, WIDGET_WIDTH, 20)
+                .bounds(x, this.top + 120, WIDGET_WIDTH, 20)
                 .build());
 
         TunnelStatus status = P2PC.getInstance().getSculkManager().getTunnelStatus();
@@ -172,14 +174,19 @@ public class HostScreen extends BaseScreen {
                 0xFFFFFF);
         Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("端口 " + this.port), this.width / 2, this.top - 14, 0x9C9C9C);
+        Gfx.centeredText(guiGraphics, this.font,
+                Component.literal("不要将链接随意发布在网络上"),
+                this.width / 2, this.top + 48, 0xFF5555);
         Gfx.centeredText(guiGraphics, this.font, this.statusText,
-                this.width / 2, this.top + 48, this.statusColor);
+                this.width / 2, this.top + 62, this.statusColor);
         Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("当前在线：" + this.players),
-                this.width / 2, this.top + 60, 0x9C9C9C);
+                this.width / 2, this.top + 74, 0x9C9C9C);
         Gfx.centeredText(guiGraphics, this.font,
                 Component.literal("复制邀请码发给朋友，对方在标题界面点末影珍珠按钮加入"),
                 this.width / 2, this.top + 132, 0x707070);
+        Gfx.centeredText(guiGraphics, this.font, Component.literal(UiText.HELP_LINE),
+                this.width / 2, this.top + 146, 0x707070);
     }
 
     @Override

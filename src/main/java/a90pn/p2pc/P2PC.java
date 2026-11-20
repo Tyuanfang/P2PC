@@ -19,7 +19,6 @@ public class P2PC {
 	public P2PC() {
 		P2PC.bootstrap();
 		// 客户端钩子（界面注入、HUD、tick）只在客户端加载器里注册。
-		// NeoForge 21.1.x 的 FMLEnvironment 暴露的是 dist 字段，21.11 起改成了 getDist()。
 		//? if <1.21.11 {
 		if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
 		//?} else {

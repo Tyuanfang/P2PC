@@ -46,10 +46,22 @@ public final class Gfx {
         fill(graphics, x, Math.min(y1, y2), x + 1, Math.max(y1, y2), color);
     }
 
+    /**
+     * 把颜色补成不透明的 ARGB。
+     *
+     * <p>1.21.11 起 {@code GuiGraphics.drawString} 会先算 {@code ARGB.alpha(color)}，
+     * alpha 为 0 就直接 return（整段文字丢弃）；而 1.21.1 及更早的版本会把「不带 alpha
+     * 的 0xRRGGBB」当成不透明处理。为了同一份代码在两个版本上表现一致，这里统一把
+     * 没有 alpha 的颜色补成 {@code 0xFFRRGGBB}。</p>
+     */
+    private static int opaqueColor(int color) {
+        return (color & 0xFF000000) == 0 ? (color | 0xFF000000) : color;
+    }
+
     /** 左对齐文字（默认带阴影）。 */
     public static void text(Object graphics, Font font, String text, int x, int y, int color) {
         //? if <26.3 {
-        ((net.minecraft.client.gui.GuiGraphics) graphics).drawString(font, text, x, y, color);
+        ((net.minecraft.client.gui.GuiGraphics) graphics).drawString(font, text, x, y, opaqueColor(color));
         //?} else {
         /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics).text(font, text, x, y, color);
         *///?}
@@ -58,9 +70,9 @@ public final class Gfx {
     /** 左对齐文字（默认带阴影）。 */
     public static void text(Object graphics, Font font, Component text, int x, int y, int color) {
         //? if <26.3 {
-        ((net.minecraft.client.gui.GuiGraphics) graphics).drawString(font, text, x, y, color);
+        ((net.minecraft.client.gui.GuiGraphics) graphics).drawString(font, text, x, y, opaqueColor(color));
         //?} else {
-        /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics).text(font, text, x, y, color);
+        /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics).text(font, text, x, y, opaqueColor(color));
         *///?}
     }
 
@@ -69,10 +81,10 @@ public final class Gfx {
             Object graphics, Font font, String text, int centerX, int y, int color) {
         //? if <26.3 {
         ((net.minecraft.client.gui.GuiGraphics) graphics)
-                .drawCenteredString(font, text, centerX, y, color);
+                .drawCenteredString(font, text, centerX, y, opaqueColor(color));
         //?} else {
         /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics)
-                .centeredText(font, text, centerX, y, color);
+                .centeredText(font, text, centerX, y, opaqueColor(color));
         *///?}
     }
 
@@ -81,10 +93,10 @@ public final class Gfx {
             Object graphics, Font font, Component text, int centerX, int y, int color) {
         //? if <26.3 {
         ((net.minecraft.client.gui.GuiGraphics) graphics)
-                .drawCenteredString(font, text, centerX, y, color);
+                .drawCenteredString(font, text, centerX, y, opaqueColor(color));
         //?} else {
         /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics)
-                .centeredText(font, text, centerX, y, color);
+                .centeredText(font, text, centerX, y, opaqueColor(color));
         *///?}
     }
 
@@ -93,10 +105,10 @@ public final class Gfx {
             Object graphics, Font font, FormattedCharSequence text, int centerX, int y, int color) {
         //? if <26.3 {
         ((net.minecraft.client.gui.GuiGraphics) graphics)
-                .drawCenteredString(font, text, centerX, y, color);
+                .drawCenteredString(font, text, centerX, y, opaqueColor(color));
         //?} else {
         /*((net.minecraft.client.gui.GuiGraphicsExtractor) graphics)
-                .centeredText(font, text, centerX, y, color);
+                .centeredText(font, text, centerX, y, opaqueColor(color));
         *///?}
     }
 

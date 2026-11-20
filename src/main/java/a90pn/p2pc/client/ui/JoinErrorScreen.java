@@ -2,6 +2,7 @@ package a90pn.p2pc.client.ui;
 
 import a90pn.p2pc.compat.Render;
 
+import a90pn.p2pc.client.UiText;
 import net.minecraft.client.Minecraft;
 import a90pn.p2pc.compat.BaseScreen;
 import a90pn.p2pc.compat.Gfx;
@@ -41,13 +42,14 @@ public class JoinErrorScreen extends BaseScreen {
     public JoinErrorScreen(Screen parent, String errorMessage) {
         super(Component.empty());
         this.parent = parent;
-        this.errorMessage = errorMessage == null || errorMessage.isBlank() ? "未知错误" : errorMessage;
+        this.errorMessage = UiText.error(errorMessage);
     }
 
     @Override
     protected void init() {
+        // 按钮放底部，避免和错误文本（行数不定）重叠。
         this.addRenderableWidget(Button.builder(Component.literal("返回主界面"), button -> this.onClose())
-                .bounds(this.width / 2 - 100, this.height / 2 + 66, 200, 20)
+                .bounds(this.width / 2 - 100, this.height - 34, 200, 20)
                 .build());
     }
 
@@ -106,8 +108,8 @@ public class JoinErrorScreen extends BaseScreen {
         if (t >= textAt) {
             Gfx.centeredText(guiGraphics, this.font, Component.literal("连接失败"), this.width / 2, 20, 0xFF5555);
             List<FormattedCharSequence> lines = this.font.split(Component.literal(this.errorMessage), 320);
-            int y = (int) cy + 34;
-            int maxLines = Math.min(lines.size(), 6);
+            int y = (int) cy + 26;
+            int maxLines = Math.min(lines.size(), 5);
             for (int i = 0; i < maxLines; i++) {
                 Gfx.centeredText(guiGraphics, this.font, lines.get(i), this.width / 2, y, 0xFFFFFF);
                 y += 12;
@@ -118,6 +120,9 @@ public class JoinErrorScreen extends BaseScreen {
             }
             Gfx.centeredText(guiGraphics, this.font, Component.literal("检查邀请码是否过期，或让房主重新分享"),
                     this.width / 2, y + 6, 0xA0A0A0);
+            // 帮助提示贴着按钮上方，避免和小窗口底部的按钮打架。
+            Gfx.centeredText(guiGraphics, this.font, Component.literal(UiText.HELP_LINE),
+                    this.width / 2, Math.max(y + 20, this.height - 52), 0x707070);
         }
     }
 

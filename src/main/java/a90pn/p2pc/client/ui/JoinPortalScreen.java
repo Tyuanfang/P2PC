@@ -1,5 +1,7 @@
 package a90pn.p2pc.client.ui;
 
+import a90pn.p2pc.client.UiText;
+
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.MassageKind;
 import a90pn.p2pc.Sculk.SculkManager;
@@ -109,7 +111,7 @@ public class JoinPortalScreen extends BaseScreen {
             return;
         }
         if (kind == MassageKind.ERROR) {
-            this.fail(reason == null || reason.isBlank() ? message : message + "（" + reason + "）");
+            this.fail(UiText.detail(message, reason));
             return;
         }
         if (!this.connected && kind == MassageKind.INFO && "已连接".equals(message)) {
@@ -124,7 +126,7 @@ public class JoinPortalScreen extends BaseScreen {
             return;
         }
         if (reason != null && !reason.isBlank()) {
-            this.statusText = message + "（" + reason + "）";
+            this.statusText = message + "（" + UiText.error(reason) + "）";
         } else if (message != null && !message.isBlank()) {
             this.statusText = message;
         }
