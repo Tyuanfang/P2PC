@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 
 /**
- * 标题界面里的「加入世界」按钮：直接用贴图绘制，悬停时切换到高亮版本。
+ * 标题界面里的「加入世界」按钮：直接用贴图绘制，按状态切换三态贴图。
  *
  * <p>贴图是 20x20 的完整按钮（含外框和末影珍珠图标），所以控件尺寸固定为 20x20，
  * 既保持像素清晰，也和原版按钮行的高度对齐。</p>
@@ -14,9 +14,11 @@ import net.minecraft.network.chat.Component;
 public class PearlButton extends Button {
     private static final int SIZE = 20;
     private static final Object TEXTURE_IDLE =
-            Textures.of("p2pc", "textures/gui/open_button_normal.png");
+            Textures.of("p2pc", "textures/gui/p2pc_button.png");
     private static final Object TEXTURE_HOVER =
-            Textures.of("p2pc", "textures/gui/open_button_hower.png");
+            Textures.of("p2pc", "textures/gui/p2pc_button_highlighted.png");
+    private static final Object TEXTURE_DISABLED =
+            Textures.of("p2pc", "textures/gui/p2pc_button_disabled.png");
 
     public PearlButton(int x, int y, Component message, Component tooltip, OnPress onPress) {
         super(x, y, SIZE, SIZE, message, onPress, DEFAULT_NARRATION);
@@ -55,7 +57,14 @@ public class PearlButton extends Button {
     *///?}
 
     private void drawIcon(Object graphics) {
-        Object texture = this.isHoveredOrFocused() ? TEXTURE_HOVER : TEXTURE_IDLE;
+        Object texture;
+        if (!this.active) {
+            texture = TEXTURE_DISABLED;
+        } else if (this.isHoveredOrFocused()) {
+            texture = TEXTURE_HOVER;
+        } else {
+            texture = TEXTURE_IDLE;
+        }
         Textures.blit(
                 graphics,
                 texture,
