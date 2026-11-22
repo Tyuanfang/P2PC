@@ -29,9 +29,16 @@ public class JoinErrorScreen extends BaseScreen {
 
     private static final ItemStack TNT = new ItemStack(Items.TNT);
 
+    /** 静态文案：drawContents 每帧都会跑到，别在里面 new Component。 */
+    private static final Component TITLE_TEXT = Component.literal("连接失败");
+    private static final Component HINT_TEXT = Component.literal("检查邀请码是否过期，或让房主重新分享");
+    private static final Component HELP_TEXT = Component.literal(UiText.HELP_LINE);
+
     private final Screen parent;
     private final String errorMessage;
     private final long openedAt = Time.millis();
+    /** 错误文本的折行结果：在 init() 里算一次，别每帧都调用 font.split。 */
+    private List<FormattedCharSequence> errorLines = List.of();
 
     private boolean boomed;
     private boolean playedSound;
@@ -51,6 +58,7 @@ public class JoinErrorScreen extends BaseScreen {
         this.addRenderableWidget(Button.builder(Component.literal("返回主界面"), button -> this.onClose())
                 .bounds(this.width / 2 - 100, this.height - 34, 200, 20)
                 .build());
+        this.errorLines = this.font.split(Component.literal(this.errorMessage), 320);
     }
 
     @Override
@@ -106,8 +114,8 @@ public class JoinErrorScreen extends BaseScreen {
 
         long textAt = DROP_MS + (long) (BLAST_MS * 0.5);
         if (t >= textAt) {
-            Gfx.centeredText(guiGraphics, this.font, Component.literal("连接失败"), this.width / 2, 20, 0xFF5555);
-            List<FormattedCharSequence> lines = this.font.split(Component.literal(this.errorMessage), 320);
+            Gfx.centeredText(guiGraphics, this.font, TITLE_TEXT, this.width / 2, 20, 0xFF5555);
+            List<FormattedCharSequence> lines = this.errorLines;
             int y = (int) cy + 26;
             int maxLines = Math.min(lines.size(), 5);
             for (int i = 0; i < maxLines; i++) {
@@ -118,10 +126,9 @@ public class JoinErrorScreen extends BaseScreen {
                 Gfx.centeredText(guiGraphics, this.font, Component.literal("…"), this.width / 2, y, 0xA0A0A0);
                 y += 12;
             }
-            Gfx.centeredText(guiGraphics, this.font, Component.literal("检查邀请码是否过期，或让房主重新分享"),
-                    this.width / 2, y + 6, 0xA0A0A0);
+            Gfx.centeredText(guiGraphics, this.font, HINT_TEXT, this.width / 2, y + 6, 0xA0A0A0);
             // 帮助提示贴着按钮上方，避免和小窗口底部的按钮打架。
-            Gfx.centeredText(guiGraphics, this.font, Component.literal(UiText.HELP_LINE),
+            Gfx.centeredText(guiGraphics, this.font, HELP_TEXT,
                     this.width / 2, Math.max(y + 20, this.height - 52), 0x707070);
         }
     }

@@ -78,6 +78,17 @@ public class P2PC {
 		return sculkManager;
 	}
 
+	/**
+	 * 当前隧道管理器；模组还没初始化（或初始化失败）时返回 {@code null}。
+	 *
+	 * <p>事件线程、HUD、界面代码都在很早期就可能被调到，直接
+	 * {@code getInstance().getSculkManager()} 会空指针，所以统一走这个入口。</p>
+	 */
+	public static SculkManager manager() {
+		P2PC mod = instance;
+		return mod == null ? null : mod.sculkManager;
+	}
+
 	public static P2PC getInstance() {
 		return instance;
 	}

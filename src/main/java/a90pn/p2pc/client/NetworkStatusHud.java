@@ -65,6 +65,9 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
     /** 加载动画是否已经 restart 过，避免每帧都重置到第 0 帧。 */
     private boolean loadingStarted;
 
+    /** 复用同一个队列，避免每帧都新建 List（HUD 每帧都会调）。 */
+    private final List<Object> queue = new ArrayList<>(3);
+
     /**
      * Fabric 的 HUD 回调。只画图标，不拦截任何输入。
      */
@@ -112,22 +115,22 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
      * 没有联机、不在加入状态时返回空列表并清空内部状态。
      */
     private List<Object> collectQueue() {
+        queue.clear();
         P2PC mod = P2PC.getInstance();
         if (mod == null) {
             reset();
-            return List.of();
+            return queue;
         }
         SculkManager manager = mod.getSculkManager();
         if (manager == null || manager.getStatus() != SculkStatues.JOIN) {
             reset();
-            return List.of();
+            return queue;
         }
         TunnelStatus status = manager.getTunnelStatus();
         if (status == null) {
-            return List.of();
+            return queue;
         }
 
-        List<Object> queue = new ArrayList<>(3);
         boolean loading = true;
         boolean relay = false;
         boolean highPing = false;
@@ -137,12 +140,15 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
         if (phase == TunnelPhase.ACTIVE || phase == TunnelPhase.STOPPING) {
             loading = false;
             ConnectionSnapshot best = null;
-            for (ConnectionSnapshot snapshot : status.connections()) {
-                if (snapshot == null || !snapshot.alive()) {
-                    continue;
-                }
-                if (best == null || snapshot.rttMs() < best.rttMs()) {
-                    best = snapshot;
+            List<ConnectionSnapshot> connections = status.connections();
+            if (connections != null) {
+                for (ConnectionSnapshot snapshot : connections) {
+                    if (snapshot == null || !snapshot.alive()) {
+                        continue;
+                    }
+                    if (best == null || snapshot.rttMs() < best.rttMs()) {
+                        best = snapshot;
+                    }
                 }
             }
             if (best != null) {
@@ -162,7 +168,7 @@ public final class NetworkStatusHud implements net.fabricmc.fabric.api.client.re
                 this.loadingStarted = true;
                 AnimSheet.LOADING.restart();
             }
-            // null 是「加载中」的占位，见 onHudRender
+            // null 是「加载中」的占位，见 render
             queue.add(null);
         }
         if (Time.millis() < this.alternateNodeUntil) {

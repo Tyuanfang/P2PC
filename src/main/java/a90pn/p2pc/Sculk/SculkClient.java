@@ -460,7 +460,9 @@ public final class SculkClient {
             // 立即释放订阅对象：Rust 侧随后让阻塞中的 recv 返回 null
             release();
             Thread current = thread;
-            if (current != null) {
+            // 在事件线程内部回调 close() 时不能 interrupt 自己：中断标记会让接下来
+            // stop()/get(2s) 之类可中断的等待立刻抛 InterruptedException，隧道就停不干净。
+            if (current != null && current != Thread.currentThread()) {
                 current.interrupt();
             }
         }

@@ -6,6 +6,7 @@ import a90pn.p2pc.compat.Gfx;
 
 import a90pn.p2pc.P2PC;
 import a90pn.p2pc.Sculk.SculkClient;
+import a90pn.p2pc.Sculk.SculkManager;
 import a90pn.p2pc.Sculk.SculkStatues;
 import a90pn.p2pc.client.HostSettings;
 import net.minecraft.client.Minecraft;
@@ -127,7 +128,12 @@ public class HostUI extends BaseScreen {
             return;
         }
 
-        SculkStatues current = P2PC.getInstance().getSculkManager().getStatus();
+        SculkManager manager = P2PC.manager();
+        SculkStatues current = manager == null ? SculkStatues.NULL : manager.getStatus();
+        if (manager == null) {
+            showError("P2PC 还没初始化完成，请稍后再试");
+            return;
+        }
         if (current == SculkStatues.JOIN) {
             showError("正在加入别人的世界，先断开再创建房间");
             return;
@@ -194,7 +200,7 @@ public class HostUI extends BaseScreen {
         HostSettings.setPvp(this.pvp);
         HostSettings.setMotd(motd);
 
-        P2PC.getInstance().getSculkManager().host(
+        manager.host(
                 SculkClient.hostOptions(actualPort, null, null, null, null, SculkClient.hostConfig(100L, null)),
                 (status, kind, message, reason) -> HostScreen.pushEvent(kind, message, reason));
 

@@ -44,6 +44,9 @@ public class JoinPortalScreen extends BaseScreen {
     private final Screen parent;
     private final long openedAt = Time.millis();
 
+    /** 本次加入用的管理器；startJoin 里赋值，fail()/onClose() 收尾时可能为 null。 */
+    private SculkManager manager;
+
     private boolean started;
     private boolean connected;
     private boolean failed;
@@ -73,7 +76,12 @@ public class JoinPortalScreen extends BaseScreen {
     }
 
     private void startJoin() {
-        SculkManager manager = P2PC.getInstance().getSculkManager();
+        SculkManager manager = P2PC.manager();
+        if (manager == null) {
+            this.abortWithError("P2PC 还没初始化完成，请稍后再试");
+            return;
+        }
+        this.manager = manager;
         SculkStatues state = manager.getStatus();
         // 正在开房间时不能再加入：直接报错，别动房间
         if (state == SculkStatues.HOST) {
@@ -173,25 +181,34 @@ public class JoinPortalScreen extends BaseScreen {
             return;
         }
         this.failed = true;
-        try {
-            P2PC.getInstance().getSculkManager().close();
-        } catch (Throwable ignored) {
-            // 关闭失败挡住错误页
-        }
+        closeTunnelAsync();
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {
             a90pn.p2pc.compat.ScreenSwap.to(minecraft, new JoinErrorScreen(this.parent, message));
         }
     }
 
+    /** 收隧道最多会阻塞两秒，放后台线程做，别卡住客户端主线程。 */
+    private void closeTunnelAsync() {
+        SculkManager current = this.manager;
+        if (current == null) {
+            return;
+        }
+        Thread cleanup = new Thread(() -> {
+            try {
+                current.close();
+            } catch (RuntimeException ignored) {
+                // 收尾失败不挡界面
+            }
+        }, "p2pc-join-close");
+        cleanup.setDaemon(true);
+        cleanup.start();
+    }
+
     @Override
     public void onClose() {
         if (!this.entered && !this.failed) {
-            try {
-                P2PC.getInstance().getSculkManager().close();
-            } catch (Throwable ignored) {
-                // 忽略
-            }
+            closeTunnelAsync();
         }
         Minecraft minecraft = this.minecraft;
         if (minecraft != null) {

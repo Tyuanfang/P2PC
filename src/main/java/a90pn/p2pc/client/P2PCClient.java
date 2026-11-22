@@ -109,9 +109,13 @@ public class P2PCClient implements net.fabricmc.api.ClientModInitializer {
 	 * {@code IEventBus} 拿到。之后版本换成了每个事件类自带的静态 BUS，就不需要这个入口了。
 	 ^/
 	public static void initForgeModBus(net.minecraftforge.eventbus.api.IEventBus modBus) {
+		//? if >=1.21.1 {
 		modBus.addListener((net.minecraftforge.client.event.AddGuiOverlayLayersEvent event) -> event.getLayeredDraw()
 				.add(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("p2pc", "network_status_icons"),
 						(graphics, deltaTracker) -> NetworkStatusHud.INSTANCE.render(graphics)));
+		//?}
+		// 1.21（51.x）还没有 GUI 覆盖层注册事件：AddGuiOverlayLayersEvent 是从 1.21.1 才加的，
+		// 所以 1.21-forge 上这个方法是空实现，右上角不显示网络状态图标（其余功能不受影响）。
 	}
 	//?}
 	*///?}
@@ -122,10 +126,20 @@ public class P2PCClient implements net.fabricmc.api.ClientModInitializer {
 	 */
 	private static void onDisconnect() {
 		LanAnnouncer.stop();
-		P2PC mod = P2PC.getInstance();
-		if (mod != null && mod.getSculkManager() != null) {
-			mod.getSculkManager().close();
+		a90pn.p2pc.Sculk.SculkManager manager = P2PC.manager();
+		if (manager == null) {
+			return;
 		}
+		// close() 内部会 stop().get(2s)，在客户端线程上直接调会卡住断开流程，放后台线程。
+		Thread cleanup = new Thread(() -> {
+			try {
+				manager.close();
+			} catch (RuntimeException ignored) {
+				// 断开时收尾失败无碍：下次连接会重建服务对象
+			}
+		}, "p2pc-disconnect-close");
+		cleanup.setDaemon(true);
+		cleanup.start();
 	}
 
 	/** 每个界面初始化完成后注入我们的入口按钮。 */
@@ -171,7 +185,7 @@ public class P2PCClient implements net.fabricmc.api.ClientModInitializer {
 				// 原版按钮已经用不上了：藏起来，别让点击穿透到它。
 				widget.visible = false;
 				widget.active = false;
-				boolean hosting = P2PC.getInstance().getSculkManager().getStatus() == SculkStatues.HOST;
+				boolean hosting = isHosting();
 				Component label = hosting ? Component.literal("管理房间") : shareLabel;
 				buttons.add(new LanShareButton(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(),
 						label, button -> openHostPanel(screen)));
@@ -181,7 +195,7 @@ public class P2PCClient implements net.fabricmc.api.ClientModInitializer {
 
 		// 兼容别的「自定义局域网联机」模组：它们可能把原版按钮的文字/位置也改掉了，
 		// 这时按文字找不到槽位。如果正在开房间，就在按钮列最下面补一个管理入口，保证还能回去看邀请码。
-		boolean hosting = P2PC.getInstance().getSculkManager().getStatus() == SculkStatues.HOST;
+		boolean hosting = isHosting();
 		if (!hosting || buttons.isEmpty()) {
 			return;
 		}
@@ -199,8 +213,14 @@ public class P2PCClient implements net.fabricmc.api.ClientModInitializer {
 		if (minecraft.getSingleplayerServer() == null) {
 			return;
 		}
-		boolean hosting = P2PC.getInstance().getSculkManager().getStatus() == SculkStatues.HOST;
+		boolean hosting = isHosting();
 		a90pn.p2pc.compat.ScreenSwap.to(minecraft,
 				hosting ? HostScreen.reopen(parent) : new HostUI(Component.empty(), parent));
+	}
+
+	/** 当前是否在开房间（管理器还没初始化时按「不是」处理，避免空指针）。 */
+	private static boolean isHosting() {
+		a90pn.p2pc.Sculk.SculkManager manager = P2PC.manager();
+		return manager != null && manager.getStatus() == SculkStatues.HOST;
 	}
 }

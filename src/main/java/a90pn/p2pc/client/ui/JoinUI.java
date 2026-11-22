@@ -20,9 +20,15 @@ import net.minecraft.network.chat.Component;
 public class JoinUI extends BaseScreen {
     private static final int WIDGET_WIDTH = 220;
 
+    /** 静态文案：drawContents 每帧都会跑，别在里面 new Component。 */
+    private static final Component TITLE_TEXT = Component.literal("加入世界");
+    private static final Component HINT_TEXT = Component.literal("粘贴好友分享的邀请码");
+    private static final Component TRUST_TEXT = Component.literal("只连接你信任的人分享的邀请码");
+
     private final Screen parent;
     private EditBox codeBox;
     private String errorText;
+    private Component errorComponent;
     private long errorUntil;
 
     public JoinUI(Component title, Screen parent) {
@@ -53,19 +59,18 @@ public class JoinUI extends BaseScreen {
     @Override
     protected void drawContents(Object guiGraphics, int mouseX, int mouseY, float partialTick) {
         long now = Time.millis();
-        Gfx.centeredText(guiGraphics, this.font, Component.literal("加入世界"), this.width / 2, 36, 0xFFFFFF);
-        Gfx.centeredText(guiGraphics, this.font, Component.literal("粘贴好友分享的邀请码"),
-                this.width / 2, this.height / 2 - 34, 0xA0A0A0);
+        Gfx.centeredText(guiGraphics, this.font, TITLE_TEXT, this.width / 2, 36, 0xFFFFFF);
+        Gfx.centeredText(guiGraphics, this.font, HINT_TEXT, this.width / 2, this.height / 2 - 34, 0xA0A0A0);
         if (this.errorText != null) {
             if (now < this.errorUntil) {
-                Gfx.centeredText(guiGraphics, this.font, Component.literal(this.errorText),
+                Gfx.centeredText(guiGraphics, this.font, this.errorComponent,
                         this.width / 2, this.height / 2 + 84, 0xFF5555);
             } else {
                 this.errorText = null;
+                this.errorComponent = null;
             }
         }
-        Gfx.centeredText(guiGraphics, this.font, Component.literal("只连接你信任的人分享的邀请码"),
-                this.width / 2, this.height - 30, 0x808080);
+        Gfx.centeredText(guiGraphics, this.font, TRUST_TEXT, this.width / 2, this.height - 30, 0x808080);
     }
 
     //? if <1.21.11 {
@@ -110,6 +115,7 @@ public class JoinUI extends BaseScreen {
 
     private void showError(String text, long durationMs) {
         this.errorText = text;
+        this.errorComponent = Component.literal(text);
         this.errorUntil = Time.millis() + durationMs;
     }
 
